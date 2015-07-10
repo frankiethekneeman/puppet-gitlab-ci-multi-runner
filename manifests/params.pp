@@ -22,7 +22,7 @@ class gitlab_ci_multi_runner::params {
 
     # The Docker Image (eg. ruby:2.1)
     $docker_image       = undef
-    #... I don't know what this option does.  Boolean, though.
+    # Run Docker containers in privileged mode
     $docker_privileged  = undef
     #mysql version (X.Y) or latest
     $docker_mysql       = undef

@@ -36,7 +36,9 @@ Used by the Docker and Docker SSH executors.
 > The Docker Image (eg. ruby:2.1)
 
 ####docker\_privileged
-... I don't know what this option does.  I do know it's a boolean option - on or off.
+> Run Docker containers in privileged mode
+
+Any truthy value will set this off.
 
 ####docker\_mysql
 > If you want to enable mysql please enter version (X.Y) or enter latest
