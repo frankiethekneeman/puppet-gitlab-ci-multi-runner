@@ -2,22 +2,52 @@
 ---
 A module for the installation and use of the [Gitlab CI MultiRunner](https://github.com/ayufan/gitlab-ci-multi-runner) written in Go.
 
-Installation takes place via the instructions found [here](https://github.com/ayufan/gitlab-ci-multi-runner/blob/master/docs/install/linux-repository.md) - Repo is added, User created and managed, and the Runner created.
+Installation takes place via the instructions found 
+[here](https://github.com/ayufan/gitlab-ci-multi-runner/blob/master/docs/install/linux-repository.md) - Repo is added, 
+User created and managed, and the Runners are registered.
 
-This package is currently only capable of registering one runner per machine - Multi Registration is intended long term, but I don't know when I'll have time to work on it again.  I am however, very intersted and accepting of backwards compatible PRs.
 
-##Options
+##Usage
 
-All options are pulled from the Gitlab CI MultiRunner registration command.
+```puppet
+class {'gitlab_ci_multi_runner': }
 
-###Runner Options
+gitlab_ci_multi_runner::runner { "This is My Runner":
+    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+    tags          => ['tag', 'tag2','java', 'php'],
+    token         => 'sometoken'
+    executor      => 'shell',
+}
+
+gitlab_ci_multi_runner::runner { "This is My Second Runner":
+    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+    tags          => ['tag', 'tag2','npm', 'grunt'],
+    token         => 'sometoken'
+    executor      => 'ssh',
+    ssh_host      => 'cirunners.examplecorp.com'
+    ssh_port      => 22
+    ssh_user      => 'mister-ci'
+    ssh_password  => 'password123'
+}
+```
+##Class options
+
+Only one option is available to the class, and on a temporary basis:
+
+###package\_manager
+`apt` or `rpm` only - defaults to rpm.  This is to let gitlab_ci_multi_runner know how to install the gitlab repositories.
+Eventually, this should be upgraded to automated detection.
+
+##Runner Options
+
+All options are pulled from the Gitlab CI MultiRunner registration command - The name of the runner will be used to
+Generate the description when registering the Runner.
+
+###Standard Options
 Used By all Executors.
 
 ####gitlab\_ci\_url
 > The GitLab-CI Coordinator URL
-
-####description
-> The GitLab-CI Description for this Runner
 
 ####tags
 This is a list of tags to apply to the runner - it takes an array, which will be joined into a comma separated list of tags.

@@ -1,9 +1,9 @@
 {
   "name": "frankiethekneeman-gitlab_ci_multi_runner",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "author": "Francis J.. Van Wetering IV",
-  "license": "Apache-2.0",
-  "summary": "A module for a thing",
+  "license": "MIT",
+  "summary": "A Module to Install and register the Gitlab CI Multirunner.",
   "source": "https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner",
   "project_page": "https://forge.puppetlabs.com/frankiethekneeman/gitlab-ci-multi-runner",
   "issues_url": "https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues",
