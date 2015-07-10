@@ -1,6 +1,6 @@
 {
   "name": "frankiethekneeman-gitlab_ci_multi_runner",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Francis J.. Van Wetering IV",
   "license": "Apache-2.0",
   "summary": "A module for a thing",
