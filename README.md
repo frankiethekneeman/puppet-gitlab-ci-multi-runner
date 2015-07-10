@@ -27,6 +27,7 @@ This is a list of tags to apply to the runner - it takes an array, which will be
 
 ####executor
 > The Executor: shell, docker, docker-ssh, ssh?
+
 The Runner is packages with a "Parallels" Executor as well.
 
 ### Docker Options
