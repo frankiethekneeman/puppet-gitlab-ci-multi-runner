@@ -30,13 +30,6 @@ gitlab_ci_multi_runner::runner { "This is My Second Runner":
     ssh_password  => 'password123'
 }
 ```
-##Class options
-
-Only one option is available to the class, and on a temporary basis:
-
-###package\_manager
-`apt` or `rpm` only - defaults to rpm.  This is to let gitlab_ci_multi_runner know how to install the gitlab repositories.
-Eventually, this should be upgraded to automated detection.
 
 ##Runner Options
 
