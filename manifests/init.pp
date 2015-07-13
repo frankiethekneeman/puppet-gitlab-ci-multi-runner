@@ -1,16 +1,23 @@
 class gitlab_ci_multi_runner (
     #The package manager version to add the repository for - RPM or APT. Currently, only RPM is supported because it's the only system 
     #I have to test for.
-
-    $package_manager    = 'rpm'
-    #TODO:  Get $package_manager from environment, not from parameter.
 ) {
+    $package_manager = $::osfamily ? {
+        'redhat'  => 'rpm',
+        'debian'  => 'apt',
+        default => 'unknown',
+    }
+
+    if $package_manager == 'unknown' {
+        fail("Target Operating system (${operatingsystem}) not supported")
+    } elsif $package_manager == 'apt' {
+        warning("${operatingsystem} support is still in Beta - please report any issues to the main repository at https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues")
+    }
 
     # Get the file created by the "repo adding" step.
-    # This may need to be refactored to use "onlyif" tests instead of using "creates" when APT support is built out.
     $repoLocation = $package_manager ? {
-        'rpm' => "/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo",
-        #TODO:  Add repo Location for APT
+        'rpm'   => "/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo",
+        'apt'   => "/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list",
         default => '/var',
             # Choose a file that will definitely be there so that we don't have to worry about it running in the case
             # of an unknown package_manager type.
