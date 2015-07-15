@@ -42,6 +42,12 @@ class gitlab_ci_multi_runner (
     package { 'gitlab-ci-multi-runner':
         ensure => installed
     } ->
+    exec {"Ensure Service":
+        command  => "gitlab-ci-multi-runner install",
+        user     => root,
+        provider => shell,
+        creates  => "/etc/init.d/gitlab-ci-multi-runner"
+    } ->
     # Ensure that the service is running at all times.
     service { "gitlab-ci-multi-runner":
         ensure => "running",
