@@ -1,6 +1,4 @@
 class gitlab_ci_multi_runner (
-    #The package manager version to add the repository for - RPM or APT. Currently, only RPM is supported because it's the only system 
-    #I have to test for.
 ) {
     $package_manager = $::osfamily ? {
         'redhat'  => 'rpm',
@@ -22,6 +20,12 @@ class gitlab_ci_multi_runner (
             # Choose a file that will definitely be there so that we don't have to worry about it running in the case
             # of an unknown package_manager type.
     }
+    
+    $version = $::osfamily ? {
+        'redhat' => '0.4.2-1',
+        'debian' => 'installed',
+        default  => 'There is no spoon',
+    }
 
     $user = 'gitlab_ci_multi_runner'
 
@@ -40,7 +44,7 @@ class gitlab_ci_multi_runner (
     } ->
     # Install the package after the repo has been added.
     package { 'gitlab-ci-multi-runner':
-        ensure => installed
+        ensure => $version
     } ->
     exec {"Ensure Service":
         command  => "gitlab-ci-multi-runner install",
@@ -51,5 +55,21 @@ class gitlab_ci_multi_runner (
     # Ensure that the service is running at all times.
     service { "gitlab-ci-multi-runner":
         ensure => "running",
+    }
+
+    if $package_manager == 'rpm' {
+        exec { "Yum Exclude Line":
+            command  => "echo exclude= >> /etc/yum.conf",
+            onlyif   => "! grep '^exclude=' /etc/yum.conf",
+            user     => root,
+            provider => shell,
+            require  => Exec["Ensure Service"]
+        }->
+        exec { "Yum Exclude gitlab-ci-multi-runner":
+            command  => "sed -i 's/^exclude=.*$/& gitlab-ci-multi-runner/' /etc/yum.conf",
+            onlyif   => "! grep '^exclude=.*gitlab-ci-multi-runner' /etc/yum.conf",
+            user     => root,
+            provider => shell,
+        }
     }
 }

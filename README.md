@@ -6,6 +6,7 @@ Installation takes place via the instructions found
 [here](https://github.com/ayufan/gitlab-ci-multi-runner/blob/master/docs/install/linux-repository.md) - Repo is added, 
 User created and managed, and the Runners are registered.
 
+The YUM version is hard set to v4.2 because 5.0 does not run well on CentOS Systems.
 
 ##Usage
 
