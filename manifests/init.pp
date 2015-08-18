@@ -1,26 +1,26 @@
 class gitlab_ci_multi_runner (
 ) {
-    $package_manager = $::osfamily ? {
+    $package_type = $::osfamily ? {
         'redhat'  => 'rpm',
-        'debian'  => 'apt',
+        'debian'  => 'deb',
         default => 'unknown',
     }
 
-    if $package_manager == 'unknown' {
+    if $package_type == 'unknown' {
         fail("Target Operating system (${operatingsystem}) not supported")
-    } elsif $package_manager == 'apt' {
+    } elsif $package_type == 'deb' {
         warning("${operatingsystem} support is still in Beta - please report any issues to the main repository at https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues")
     }
 
     # Get the file created by the "repo adding" step.
-    $repoLocation = $package_manager ? {
+    $repoLocation = $package_type ? {
         'rpm'   => "/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo",
-        'apt'   => "/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list",
+        'deb'   => "/etc/deb/sources.list.d/runner_gitlab-ci-multi-runner.list",
         default => '/var',
             # Choose a file that will definitely be there so that we don't have to worry about it running in the case
             # of an unknown package_manager type.
     }
-    
+
     $version = $::osfamily ? {
         'redhat' => '0.4.2-1',
         'debian' => 'installed',
@@ -35,9 +35,9 @@ class gitlab_ci_multi_runner (
         ensure     => "present",
         managehome => "true",
     } ->
-    # Add The repository to yum/apt-get
+    # Add The repository to yum/deb-get
     exec {"Add Repository":
-        command  => "curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.${package_manager}.sh | bash",
+        command  => "curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.${package_type}.sh | bash",
         user     => root,
         provider => shell,
         creates  => $repoLocation,
@@ -57,7 +57,7 @@ class gitlab_ci_multi_runner (
         ensure => "running",
     }
 
-    if $package_manager == 'rpm' {
+    if $package_type == 'rpm' {
         exec { "Yum Exclude Line":
             command  => "echo exclude= >> /etc/yum.conf",
             onlyif   => "! grep '^exclude=' /etc/yum.conf",
