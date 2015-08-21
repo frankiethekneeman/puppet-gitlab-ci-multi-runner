@@ -1,4 +1,4 @@
-define gitlab_ci_multi_runner::runner ( 
+define gitlab_ci_multi_runner::runner (
     ########################################################
     # Runner Options                                       #
     # Used By all Executors.                               #
@@ -74,7 +74,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $tags {
-        $tagstr    = join($tags,",")
+        $tagstr    = join($tags,',')
         $tags_opt = "--tag-list=${tagstr}"
     }
 
@@ -94,7 +94,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $docker_privileged {
-        $docker_privileged_opt = "--docker-privileged"
+        $docker_privileged_opt = '--docker-privileged'
     }
 
     if $docker_mysql {
@@ -146,6 +146,6 @@ define gitlab_ci_multi_runner::runner (
         user     => $user,
         provider => shell,
         onlyif   => "! grep ${description} ${home_path}/config.toml", #Only if the config.toml file doesn't already contain an entry.
-        cwd      => "${home_path}"
+        cwd      => $home_path
     }
 }
