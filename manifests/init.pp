@@ -23,8 +23,8 @@ class gitlab_ci_multi_runner (
 
     $serviceFile = $package_type ? {
         'rpm'   => $::operatingsystemrelease ? {
-            /7.*/ => '/etc/systemd/system/gitlab-ci-multi-runner.service',
-            default => '/etc/init.d/gitlab-ci-multi-runner'
+            /7.*/ => '/etc/systemd/system/gitlab-runner.service',
+            default => '/etc/init.d/gitlab-runner'
         },
         'deb'   => '/etc/init/gitlab-runner.conf',
         default => '/bin/true'
