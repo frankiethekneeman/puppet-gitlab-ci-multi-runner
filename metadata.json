@@ -1,11 +1,11 @@
 {
     "name": "frankiethekneeman-gitlab_ci_multi_runner",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "author": "Francis J.. Van Wetering IV",
     "license": "MIT",
     "summary": "A Module to Install and register the Gitlab CI Multirunner.",
     "source": "https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner",
-    "project_page": "https://forge.puppetlabs.com/frankiethekneeman/gitlab-ci-multi-runner",
+    "project_page": "https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner",
     "issues_url": "https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues",
     "tags": ["Gitlab", "CI", "MultiRunner", "Go"],
     "operatingsystem_support": [
