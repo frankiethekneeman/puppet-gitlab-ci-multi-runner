@@ -15,7 +15,7 @@ class gitlab_ci_multi_runner (
     # Get the file created by the "repo adding" step.
     $repoLocation = $package_type ? {
         'rpm'   => '/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo',
-        'deb'   => '/etc/deb/sources.list.d/runner_gitlab-ci-multi-runner.list',
+        'deb'   => '/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list',
         default => '/var',
             # Choose a file that will definitely be there so that we don't have to worry about it running in the case
             # of an unknown package_manager type.
@@ -23,8 +23,8 @@ class gitlab_ci_multi_runner (
 
     $serviceFile = $package_type ? {
         'rpm'   => $::operatingsystemrelease ? {
-            /7.*/ => '/etc/systemd/system/gitlab-ci-multi-runner.service',
-            default => '/etc/init.d/gitlab-ci-multi-runner'
+            /(5.*|6.*)/ => '/etc/init.d/gitlab-ci-multi-runner',
+            default => '/etc/systemd/system/gitlab-runner.service'
         },
         'deb'   => '/etc/init/gitlab-runner.conf',
         default => '/bin/true'
@@ -32,11 +32,16 @@ class gitlab_ci_multi_runner (
 
     $version = $::osfamily ? {
         'redhat' => $::operatingsystemrelease ? {
-            /7.*/ => 'latest',
-            default => '0.4.2-1'
+            /(5.*|6.*)/ => '0.4.2-1',
+            default => 'latest'
         },
-        'debian' => 'installed',
+        'debian' => 'latest',
         default  => 'There is no spoon',
+    }
+
+    $service = $version ? {
+        '0.4.2-1' => 'gitlab-ci-multi-runner',
+        default   => 'gitlab-runner'
     }
 
     $user = 'gitlab_ci_multi_runner'
@@ -59,13 +64,13 @@ class gitlab_ci_multi_runner (
         ensure => $version
     } ->
     exec {'Ensure Service':
-        command  => 'gitlab-ci-multi-runner install',
+        command  => "${service} install",
         user     => root,
         provider => shell,
         creates  => $serviceFile,
     } ->
     # Ensure that the service is running at all times.
-    service { 'gitlab-ci-multi-runner':
+    service { $service:
         ensure => 'running',
     }
 
