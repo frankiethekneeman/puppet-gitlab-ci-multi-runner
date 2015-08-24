@@ -15,7 +15,7 @@ class gitlab_ci_multi_runner (
     # Get the file created by the "repo adding" step.
     $repoLocation = $package_type ? {
         'rpm'   => '/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo',
-        'deb'   => '/etc/deb/sources.list.d/runner_gitlab-ci-multi-runner.list',
+        'deb'   => '/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list',
         default => '/var',
             # Choose a file that will definitely be there so that we don't have to worry about it running in the case
             # of an unknown package_manager type.
