@@ -23,8 +23,8 @@ class gitlab_ci_multi_runner (
 
     $serviceFile = $package_type ? {
         'rpm'   => $::operatingsystemrelease ? {
-            /7.*/ => '/etc/systemd/system/gitlab-runner.service',
-            default => '/etc/init.d/gitlab-runner'
+            /(5.*|6.*)/ => '/etc/init.d/gitlab-ci-multi-runner',
+            default => '/etc/systemd/system/gitlab-runner.service'
         },
         'deb'   => '/etc/init/gitlab-runner.conf',
         default => '/bin/true'
@@ -32,11 +32,16 @@ class gitlab_ci_multi_runner (
 
     $version = $::osfamily ? {
         'redhat' => $::operatingsystemrelease ? {
-            /7.*/ => 'latest',
-            default => '0.4.2-1'
+            /(5.*|6.*)/ => '0.4.2-1',
+            default => 'latest'
         },
-        'debian' => 'installed',
+        'debian' => 'latest',
         default  => 'There is no spoon',
+    }
+
+    $service = $version ? {
+        '0.4.2-1' => 'gitlab-ci-multi-runner',
+        default   => 'gitlab-runner'
     }
 
     $user = 'gitlab_ci_multi_runner'
@@ -65,7 +70,7 @@ class gitlab_ci_multi_runner (
         creates  => $serviceFile,
     } ->
     # Ensure that the service is running at all times.
-    service { 'gitlab-ci-multi-runner':
+    service { $service:
         ensure => 'running',
     }
 
