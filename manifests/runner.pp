@@ -225,5 +225,6 @@ define gitlab_ci_multi_runner::runner (
         provider => shell,
         onlyif   => "! grep ${description} ${home_path}/config.toml",
         cwd      => $home_path,
+        require  => $require,
     }
 }
