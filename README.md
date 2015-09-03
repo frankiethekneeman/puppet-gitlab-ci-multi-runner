@@ -13,7 +13,9 @@ The version of the gitlab-ci-multi-runner package is restricted to `v0.4.2` for 
 ##Usage
 
 ```puppet
-class {'gitlab_ci_multi_runner': }
+class {'gitlab_ci_multi_runner': 
+    nice => 15
+}
 
 gitlab_ci_multi_runner::runner { "This is My Runner":
     gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
@@ -33,6 +35,12 @@ gitlab_ci_multi_runner::runner { "This is My Second Runner":
     ssh_password  => 'password123'
 }
 ```
+
+##Installation Options
+
+#### nice
+
+control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.  Leading '+' is optional.
 
 ##Runner Options
 

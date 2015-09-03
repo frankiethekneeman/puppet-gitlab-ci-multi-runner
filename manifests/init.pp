@@ -1,15 +1,16 @@
 class gitlab_ci_multi_runner (
+    $nice = undef
 ) {
     $package_type = $::osfamily ? {
         'redhat'  => 'rpm',
         'debian'  => 'deb',
         default => 'unknown',
     }
-
+    $IssuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
     if $package_type == 'unknown' {
         fail("Target Operating system (${::operatingsystem}) not supported")
     } elsif $package_type == 'deb' {
-        warning("${::operatingsystem} support is still in Beta - please report any issues to the main repository at https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues")
+        warning("${::operatingsystem} support is still in Beta - please report any issues to the main repository at ${IssuesLink}")
     }
 
     # Get the file created by the "repo adding" step.
@@ -87,6 +88,65 @@ class gitlab_ci_multi_runner (
             onlyif   => "! grep '^exclude=.*gitlab-ci-multi-runner' /etc/yum.conf",
             user     => root,
             provider => shell,
+        }
+    }
+    if $nice != undef {
+        if $nice =~ /^(-20|[-+]?1?[0-9])$/ {
+            $path = '/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin'
+            case $serviceFile {
+                '/etc/init.d/gitlab-ci-multi-runner': {
+                    $niceval = $nice ? {
+                        /^[-+]/ => $nice,
+                        default => "+${nice}"
+                    } #The nice value passed to the daemon function must have a leading sign
+                    exec {'Ensure Niceness':
+                        command  => "sed -i 's/ daemon \\([+-][0-9]\\+ \\)\\?/ daemon $niceval /g' $serviceFile",
+                        user     => root,
+                        provider => shell,
+                        path     => $path,
+                        require  => Exec['Ensure Service'],
+                        onlyif   => "! grep 'daemon $niceval ' $serviceFile", #Only if the niceness isn't already set
+                        notify   => Service[$service]
+                    }
+                }
+                '/etc/systemd/system/gitlab-runner.service': {
+                    $initCommand = "sed -i '/\\[Service\\]/a Nice=$nice' $serviceFile"
+                    $updateCommand = "sed -i 's/Nice=[+-]\\?[0-9]\\+/Nice=$nice/g' $serviceFile"
+                    $checkCommand = "grep 'Nice=[+-]\\?[0-9]\\+' $serviceFile"
+                    exec {'Ensure Niceness':
+                        command  => "$checkCommand && $updateCommand || $initCommand",
+                        user     => root,
+                        provider => shell,
+                        path     => $path,
+                        require  => Exec['Ensure Service'],
+                        onlyif   => "! grep 'Nice=$nice *\$' $serviceFile", #Only if the niceness isn't already set
+                    } ~> 
+                    exec {'Reload Service Info': #Because Puppet won't automagically do this
+                        command     => "systemctl daemon-reload",
+                        user        => root,
+                        provider    => shell,
+                        path        => $path,
+                        refreshonly => true,
+                        notify      => Service[$service]
+                    }
+                }
+                '/etc/init/gitlab-runner.conf': {
+                    exec {'Ensure Niceness':
+                        command  => "sed -i 's/ start-stop-daemon \\(-N [+-]\\?[0-9]\\+ \\)\\?/ start-stop-daemon -N $nice /g' $serviceFile",
+                        user     => root,
+                        provider => shell,
+                        path     => $path,
+                        require  => Exec['Ensure Service'],
+                        onlyif   => "! grep 'start-stop-daemon -N $nice ' $serviceFile", #Only if the niceness isn't already set
+                        notify   => Service[$service]
+                    }
+                }
+                default: {
+                    warning("Niceness not enabled for Service file $serviceFile.  Please report this to ${IssuesLink}")
+                }
+            }
+        } else {
+            fail("Invalid nice value: ${nice}")
         }
     }
 }
