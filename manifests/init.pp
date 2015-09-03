@@ -92,7 +92,7 @@ class gitlab_ci_multi_runner (
     }
     if $nice != undef {
         if $nice =~ /^(-20|[-+]?1?[0-9])$/ {
-            $path = ['/bin', '/usr/bin', '/usr/sbin', '/usr/local/sbin', '/usr/local/bin', '/sbin',]
+            $path = '/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin'
             case $serviceFile {
                 '/etc/init.d/gitlab-ci-multi-runner': {
                     $niceval = $nice ? {
@@ -104,29 +104,39 @@ class gitlab_ci_multi_runner (
                         user     => root,
                         provider => shell,
                         path     => $path,
+                        require  => Exec['Ensure Service'],
                         onlyif   => "! grep 'daemon $niceval ' $serviceFile", #Only if the niceness isn't already set
                         notify   => Service[$service]
                     }
                 }
                 '/etc/systemd/system/gitlab-runner.service': {
                     $initCommand = "sed -i '/\\[Service\\]/a Nice=$nice' $serviceFile"
-                    $updateCommand = "sed -i 's/Nice=[+-]\\?[0-9]\\+/Nice=$nice/g $serviceFile"
+                    $updateCommand = "sed -i 's/Nice=[+-]\\?[0-9]\\+/Nice=$nice/g' $serviceFile"
                     $checkCommand = "grep 'Nice=[+-]\\?[0-9]\\+' $serviceFile"
                     exec {'Ensure Niceness':
                         command  => "$checkCommand && $updateCommand || $initCommand",
                         user     => root,
                         provider => shell,
                         path     => $path,
+                        require  => Exec['Ensure Service'],
                         onlyif   => "! grep 'Nice=$nice *\$' $serviceFile", #Only if the niceness isn't already set
-                        notify   => Service[$service]
+                    } ~> 
+                    exec {'Reload Service Info': #Because Puppet won't automagically do this
+                        command     => "systemctl daemon-reload",
+                        user        => root,
+                        provider    => shell,
+                        path        => $path,
+                        refreshonly => true,
+                        notify      => Service[$service]
                     }
                 }
                 '/etc/init/gitlab-runner.conf': {
                     exec {'Ensure Niceness':
-                        command  => "sed -i 's/ start-stop-daemon \\(-N [+-]\\?[0-9]\\+\\)\\? / start-stop-daemon -N $nice /g' $serviceFile",
+                        command  => "sed -i 's/ start-stop-daemon \\(-N [+-]\\?[0-9]\\+ \\)\\?/ start-stop-daemon -N $nice /g' $serviceFile",
                         user     => root,
                         provider => shell,
                         path     => $path,
+                        require  => Exec['Ensure Service'],
                         onlyif   => "! grep 'start-stop-daemon -N $nice ' $serviceFile", #Only if the niceness isn't already set
                         notify   => Service[$service]
                     }
