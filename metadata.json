@@ -1,6 +1,6 @@
 {
     "name": "frankiethekneeman-gitlab_ci_multi_runner",
-    "version": "0.1.7",
+    "version": "0.2.0",
     "author": "Francis J.. Van Wetering IV",
     "license": "MIT",
     "summary": "A Module to Install and register the Gitlab CI Multirunner.",

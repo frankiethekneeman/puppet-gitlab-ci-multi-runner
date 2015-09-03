@@ -1,15 +1,16 @@
 class gitlab_ci_multi_runner (
+    $nice = undef
 ) {
     $package_type = $::osfamily ? {
         'redhat'  => 'rpm',
         'debian'  => 'deb',
         default => 'unknown',
     }
-
+    $IssuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
     if $package_type == 'unknown' {
         fail("Target Operating system (${::operatingsystem}) not supported")
     } elsif $package_type == 'deb' {
-        warning("${::operatingsystem} support is still in Beta - please report any issues to the main repository at https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues")
+        warning("${::operatingsystem} support is still in Beta - please report any issues to the main repository at ${IssuesLink}")
     }
 
     # Get the file created by the "repo adding" step.
@@ -87,6 +88,48 @@ class gitlab_ci_multi_runner (
             onlyif   => "! grep '^exclude=.*gitlab-ci-multi-runner' /etc/yum.conf",
             user     => root,
             provider => shell,
+        }
+    }
+    if $nice != undef {
+        if $nice =~ /^(-20|[-+]?[01][0-9])$/ {
+            case $serviceFile {
+                '/etc/init.d/gitlab-ci-multi-runner': {
+                    $niceval = $nice ? {
+                        /^[-+]/ => $nice,
+                        default => "+${nice}"
+                    } #The nice value passed to the daemon function must have a leading sign
+                    exec {'Ensure Niceness':
+                        command  => "sed -i 's/ daemon / daemon $niceval /g' $serviceFile",
+                        user     => root,
+                        provider => shell,
+                        onlyif   => "! grep 'daemon $niceval' $serviceFile", #Only if the niceness isn't already set
+                        notify   => Service[$service]
+                    }
+                }
+                '/etc/systemd/system/gitlab-runner.service': {
+                    exec {'Ensure Niceness':
+                        command  => "sed -i '/\\[Service\\]/a Nice=$nice' $serviceFile",
+                        user     => root,
+                        provider => shell,
+                        onlyif   => "! grep 'Nice=$nice' $serviceFile", #Only if the niceness isn't already set
+                        notify   => Service[$service]
+                    }
+                }
+                '/etc/init/gitlab-runner.conf': {
+                    exec {'Ensure Niceness':
+                        command  => "sed -i 's/ start-stop-daemon / start-stop-daemon -N $niceval /g' $serviceFile",
+                        user     => root,
+                        provider => shell,
+                        onlyif   => "! grep 'start-stop-daemon -N $niceval' $serviceFile", #Only if the niceness isn't already set
+                        notify   => Service[$service]
+                    }
+                }
+                default: {
+                    warning("Niceness not enabled for Service file $serviceFile.  Please report this to ${IssuesLink}")
+                }
+            }
+        } else {
+            fail("Invalid nice value: ${nice}")
         }
     }
 }
