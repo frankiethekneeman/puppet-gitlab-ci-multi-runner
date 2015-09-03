@@ -1,68 +1,145 @@
+# == Define: gitlab_ci_multi_runner::runner
+#
+# Define for creating a gitlab-ci runner.
+#
+# gitlab_ci_multi_runner can/should be included to install
+# gitlab-ci-multi-runner if needed.
+#
+# === Parameters
+#
+# [*gitlab_ci_url*]
+#   URL of the Gitlab Server.
+#   Default: undef.
+#
+# [*tags*]
+#   Array of tags.
+#   Default: undef.
+#
+# [*token*]
+#   CI Token.
+#   Default: undef.
+#
+# [*executor*]
+#   Executor - Shell, parallels, ssh, docker etc.
+#   Default: undef.
+#
+# [*docker_image*]
+#   The Docker Image (eg. ruby:2.1).
+#   Default: undef.
+#
+# [*docker_privileged*]
+#   Run Docker containers in privileged mode.
+#   Default: undef.
+#
+# [*docker_mysql*]
+#   MySQL version (X.Y) or latest.
+#   Default: undef.
+#
+# [*docker_postgres*]
+#   Postgres version (X.Y) or latest.
+#   Default: undef.
+#
+# [*docker_redis*]
+#   Redis version (X.Y) or latest.
+#   Default: undef.
+#
+# [*docker_mongo*]
+#   Mongo version (X.Y) or latest.
+#   Default: undef.
+#
+# [*parallels_vm*]
+#   The Parallels VM (eg. my-vm).
+#   Default: undef.
+#
+# [*ssh_host*]
+#   The SSH Server Address.
+#   Default: undef.
+#
+# [*ssh_port*]
+#   The SSH Server Port.
+#   Default: undef.
+#
+# [*ssh_user*]
+#   The SSH User.
+#   Default: undef.
+#
+# [*ssh_password*]
+#   The SSH Password.
+#   Default: undef.
+#
+# [*require*]
+#   Array of requirements for the runner registration resource.
+#   Default: [ Class['gitlab_ci_multi_runner'] ].
+#
+# === Examples
+#
+#  gitlab_ci_multi_runner::runner { "This is My Runner":
+#      gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+#      tags          => ['tag', 'tag2','java', 'php'],
+#      token         => 'sometoken'
+#      executor      => 'shell',
+#  }
+#
+#  gitlab_ci_multi_runner::runner { "This is My Second Runner":
+#      gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+#      tags          => ['tag', 'tag2','npm', 'grunt'],
+#      token         => 'sometoken'
+#      executor      => 'ssh',
+#      ssh_host      => 'cirunners.examplecorp.com'
+#      ssh_port      => 22
+#      ssh_user      => 'mister-ci'
+#      ssh_password  => 'password123'
+#  }
+#
 define gitlab_ci_multi_runner::runner (
     ########################################################
     # Runner Options                                       #
     # Used By all Executors.                               #
     ########################################################
 
-    #URL of the Gitlab Server.
-    $gitlab_ci_url      = undef,
-    #Array of tags
-    $tags               = undef,
-    #CI Token
-    $token              = undef,
-    #Executor - Shell, parallels, ssh, docker etc
-    $executor           = undef,
+    $gitlab_ci_url = undef,
+    $tags = undef,
+    $token = undef,
+    $executor = undef,
 
     ########################################################
     # Docker Options                                       #
     # Used by the Docker and Docker SSH executors.         #
     ########################################################
 
-    # The Docker Image (eg. ruby:2.1)
-    $docker_image       = undef,
-    # Run Docker containers in privileged mode
-    $docker_privileged  = undef,
-    #mysql version (X.Y) or latest
-    $docker_mysql       = undef,
-    # postgres version (X.Y) or latest
-    $docker_postgres    = undef,
-    # redis version (X.Y) or latest
-    $docker_redis       = undef,
-    # mongo version (X.Y) or latest
-    $docker_mongo       = undef,
+    $docker_image = undef,
+    $docker_privileged = undef,
+    $docker_mysql = undef,
+    $docker_postgres = undef,
+    $docker_redis = undef,
+    $docker_mongo = undef,
 
     ########################################################
     # Parallels Options                                    #
     # Used by the "Parallels" executor.                    #
     ########################################################
 
-    # The Parallels VM (eg. my-vm)
-    $parallels_vm       = undef,
+    $parallels_vm = undef,
 
     ########################################################
     # SSH Options                                          #
     # Used by the SSH, Docker SSH, and Parllels Executors. #
     ########################################################
 
-    # The SSH Server Address
-    $ssh_host           = undef,
-    # The SSH Server Port
-    $ssh_port           = undef,
-    # The SSH User
-    $ssh_user           = undef,
-    # The SSH Password
-    $ssh_password       = undef,
-    #REQUIRE CI_MULTI_RUNNER
-    $require            = [ Class['gitlab_ci_multi_runner'] ],
+    $ssh_host = undef,
+    $ssh_port = undef,
+    $ssh_user = undef,
+    $ssh_password = undef,
+    $require = [ Class['gitlab_ci_multi_runner'] ],
 ) {
-
     $description = $name
 
     $user = 'gitlab_ci_multi_runner'
     $group = $user
     $home_path = "/home/${user}"
 
-    # Here begins the arduous, manual process of taking each argument and turning it into option strings.
+    # Here begins the arduous, manual process of taking each argument
+    # and turning it into option strings.
     # TODO find a better way to read this.
 
     if $gitlab_ci_url {
@@ -74,7 +151,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $tags {
-        $tagstr    = join($tags,',')
+        $tagstr = join($tags,',')
         $tags_opt = "--tag-list=${tagstr}"
     }
 
@@ -141,11 +218,12 @@ define gitlab_ci_multi_runner::runner (
     $opts = "--non-interactive ${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts}"
 
     # Register a new runner - this is where the magic happens.
-    exec {"Register-${name}":
-        command  => "gitlab-ci-multi-runner register ${opts} ",
+    # Only if the config.toml file doesn't already contain an entry.
+    exec { "Register-${name}":
+        command  => "gitlab-ci-multi-runner register ${opts}",
         user     => $user,
         provider => shell,
-        onlyif   => "! grep ${description} ${home_path}/config.toml", #Only if the config.toml file doesn't already contain an entry.
-        cwd      => $home_path
+        onlyif   => "! grep ${description} ${home_path}/config.toml",
+        cwd      => $home_path,
     }
 }
