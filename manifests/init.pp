@@ -1,10 +1,18 @@
+# == Class: gitlab_ci_multi_runner
+#
+# Install gitlab-ci multi runner (manage repository, package, service)
+#
+# === Examples
+#
+#  include '::gitlab_ci_multi_runner'
+#
 class gitlab_ci_multi_runner (
     $nice = undef
 ) {
     $package_type = $::osfamily ? {
-        'redhat'  => 'rpm',
-        'debian'  => 'deb',
-        default => 'unknown',
+        'redhat' => 'rpm',
+        'debian' => 'deb',
+        default  => 'unknown',
     }
     $IssuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
     if $package_type == 'unknown' {
@@ -18,23 +26,23 @@ class gitlab_ci_multi_runner (
         'rpm'   => '/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo',
         'deb'   => '/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list',
         default => '/var',
-            # Choose a file that will definitely be there so that we don't have to worry about it running in the case
-            # of an unknown package_manager type.
+        # Choose a file that will definitely be there so that we don't have
+        # to worry about it running in the case of an unknown package_type.
     }
 
     $serviceFile = $package_type ? {
         'rpm'   => $::operatingsystemrelease ? {
             /^(5.*|6.*)/ => '/etc/init.d/gitlab-ci-multi-runner',
-            default => '/etc/systemd/system/gitlab-runner.service'
+            default      => '/etc/systemd/system/gitlab-runner.service',
         },
         'deb'   => '/etc/init/gitlab-runner.conf',
-        default => '/bin/true'
+        default => '/bin/true',
     }
 
     $version = $::osfamily ? {
         'redhat' => $::operatingsystemrelease ? {
             /^(5.*|6.*)/ => '0.4.2-1',
-            default => 'latest'
+            default      => 'latest',
         },
         'debian' => 'latest',
         default  => 'There is no spoon',
@@ -42,19 +50,19 @@ class gitlab_ci_multi_runner (
 
     $service = $version ? {
         '0.4.2-1' => 'gitlab-ci-multi-runner',
-        default   => 'gitlab-runner'
+        default   => 'gitlab-runner',
     }
 
     $user = 'gitlab_ci_multi_runner'
 
     # Ensure the gitlab_ci_multi_runner user exists.
-    # TODO:  Investigate if this is necessary - the install script may handle this.
-    user{ $user:
+    # TODO:  Investigate if this is necessary - install script may handle this.
+    user { $user:
         ensure     => 'present',
         managehome => true,
     } ->
     # Add The repository to yum/deb-get
-    exec {'Add Repository':
+    exec { 'Add Repository':
         command  => "curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.${package_type}.sh | bash",
         user     => root,
         provider => shell,
@@ -62,9 +70,9 @@ class gitlab_ci_multi_runner (
     } ->
     # Install the package after the repo has been added.
     package { 'gitlab-ci-multi-runner':
-        ensure => $version
+        ensure => $version,
     } ->
-    exec {'Ensure Service':
+    exec { 'Ensure Service':
         command  => "${service} install",
         user     => root,
         provider => shell,
@@ -81,7 +89,7 @@ class gitlab_ci_multi_runner (
             onlyif   => "! grep '^exclude=' /etc/yum.conf",
             user     => root,
             provider => shell,
-            require  => Exec['Ensure Service']
+            require  => Exec['Ensure Service'],
         }->
         exec { 'Yum Exclude gitlab-ci-multi-runner':
             command  => "sed -i 's/^exclude=.*$/& gitlab-ci-multi-runner/' /etc/yum.conf",
