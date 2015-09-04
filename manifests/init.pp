@@ -91,10 +91,8 @@ class gitlab_ci_multi_runner (
             require  => Exec['Ensure Service'],
         }->
         exec { 'Yum Exclude gitlab-ci-multi-runner':
-            command  => "sed -i 's/^exclude=.*$/& gitlab-ci-multi-runner/' \
-                /etc/yum.conf",
-            onlyif   => "! grep '^exclude=.*gitlab-ci-multi-runner' \
-                /etc/yum.conf",
+            command  => "sed -i 's/^exclude=.*$/& gitlab-ci-multi-runner/' /etc/yum.conf",
+            onlyif   => "! grep '^exclude=.*gitlab-ci-multi-runner' /etc/yum.conf",
             user     => root,
             provider => shell,
         }
