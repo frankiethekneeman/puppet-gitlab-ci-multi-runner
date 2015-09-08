@@ -21,7 +21,7 @@ class gitlab_ci_multi_runner (
         'debian' => 'deb',
         default  => 'unknown',
     }
-    $IssuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
+    $issuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
     if $package_type == 'unknown' {
         fail("Target Operating system (${::operatingsystem}) not supported")
     }
@@ -164,7 +164,7 @@ class gitlab_ci_multi_runner (
                     }
                 }
                 default: {
-                    warning("Niceness not enabled for ${serviceFile}. Please report to ${IssuesLink}")
+                    warning("Niceness not enabled for ${serviceFile}. Please report to ${issuesLink}")
                 }
             }
         } else {
