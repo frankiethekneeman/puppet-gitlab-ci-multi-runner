@@ -1,13 +1,15 @@
 # Puppet Gitlab CI Multi Runner
 ---
-A module for the installation and use of the [Gitlab CI MultiRunner](https://github.com/ayufan/gitlab-ci-multi-runner) written in Go.
+A module for the installation and use of the 
+[Gitlab CI MultiRunner](https://github.com/ayufan/gitlab-ci-multi-runner) written in Go.
 
 Installation takes place via the instructions found 
-[here](https://github.com/ayufan/gitlab-ci-multi-runner/blob/master/docs/install/linux-repository.md) - Repo is added, 
-User created and managed, and the Runners are registered.
+[here](https://github.com/ayufan/gitlab-ci-multi-runner/blob/master/docs/install/linux-repository.md)
+- Repo is added, User created and managed, and the Runners are registered.
 
-The version of the gitlab-ci-multi-runner package is restricted to `v0.4.2` for RHEL5 and RHEL6 derivatives due to
- restrictions identified on CentOS systems. RHEL7 and Debian derivatives are set to use the most current release
+The version of the gitlab-ci-multi-runner package is restricted to `v0.4.2` for RHEL5 and RHEL6 
+derivatives due to restrictions identified on CentOS systems. RHEL7 and Debian derivatives are set to
+use the most current release
  available.
 
 ##Usage
@@ -40,12 +42,13 @@ gitlab_ci_multi_runner::runner { "This is My Second Runner":
 
 #### nice
 
-control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.  Leading '+' is optional.
+control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.  
+Leading '+' is optional.
 
 ##Runner Options
 
-All options are pulled from the Gitlab CI MultiRunner registration command - The name of the runner will be used to
-Generate the description when registering the Runner.
+All options are pulled from the Gitlab CI MultiRunner registration command - The name of the runner
+will be used to Generate the description when registering the Runner.
 
 ###Standard Options
 Used By all Executors.
@@ -54,7 +57,8 @@ Used By all Executors.
 > The GitLab-CI Coordinator URL
 
 ####tags
-This is a list of tags to apply to the runner - it takes an array, which will be joined into a comma separated list of tags.
+This is a list of tags to apply to the runner - it takes an array, which will be joined into a comma
+separated list of tags.
 
 ####token
 > The GitLab-CI Token for this Runner
@@ -110,6 +114,14 @@ Used by the SSH, Docker SSH, and Parllels Executors.
 
 ## Contributing
 
-Please maintain sensible spacing between logical blocks of code, and a 4 space indent - no tabs, thank you.
+Please maintain sensible spacing between logical blocks of code, and a 4 space indent - no tabs,
+thank you.  Where line breaks are concerned - readability is the key here.  Since we're no longer
+using [punch cards](http://programmers.stackexchange.com/questions/148677/why-is-80-characters-the-standard-limit-for-code-width)
+to run our code, there's no need for our lines to fit into a specific line length 100% of the time.
+That being said, this repository likes to wrap between 80 and 100 characters when possible, to
+facilitate a broad range of coding display styles.  If you use 
+[puppet-lint](http://puppet-lint.com/), I suggest you also use the flag to disable the 
+[80 character line limit](http://puppet-lint.com/checks/80chars/).
 
-Other than that, please open pull requests for any features you can.
+Please open pull requests for any features you can, and make sure to update the README for your
+features.
