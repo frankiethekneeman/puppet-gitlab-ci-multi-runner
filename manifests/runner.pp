@@ -137,6 +137,10 @@ define gitlab_ci_multi_runner::runner (
     $user = 'gitlab_ci_multi_runner'
     $group = $user
     $home_path = "/home/${user}"
+    $toml_file = $::gitlab_ci_multi_runner::version ? {
+        /^0\.[0-4]\..*/ => "${home_path}/config.toml",
+        default         => "${home_path}/.gitlab-runner/config.toml",
+    }
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -223,7 +227,7 @@ define gitlab_ci_multi_runner::runner (
         command  => "gitlab-ci-multi-runner register ${opts}",
         user     => $user,
         provider => shell,
-        onlyif   => "! grep ${description} ${home_path}/config.toml",
+        onlyif   => "! grep ${description} ${toml_file}",
         cwd      => $home_path,
         require  => $require,
     }
