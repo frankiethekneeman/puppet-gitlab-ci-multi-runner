@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/frankiethekneeman/puppet-gitlab-ci-multi-runner.svg?branch=master)](https://travis-ci.org/frankiethekneeman/puppet-gitlab-ci-multi-runner)
 # Puppet Gitlab CI Multi Runner
 ---
 A module for the installation and use of the 
