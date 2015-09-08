@@ -7,5 +7,6 @@ env:
     - PUPPET_VERSION=2.6.18
     - PUPPET_VERSION=2.7.26
 script:
-    - puppet-lint --no-80chars-check .
+    #- puppet-lint --no-80chars-check .
+    - gem list
     - puppet parser validate .
