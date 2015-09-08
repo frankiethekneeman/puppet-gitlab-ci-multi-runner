@@ -218,13 +218,13 @@ define gitlab_ci_multi_runner::runner (
 
     $ssh_opts = "${ssh_host_opt} ${ssh_port_opt} ${ssh_user_opt} ${ssh_password_opt}"
 
-    # --non-interactive means it won't ask us for things, it'll just fail out.
-    $opts = "--non-interactive ${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts}"
+    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts}"
 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
+    # --non-interactive means it won't ask us for things, it'll just fail out.
     exec { "Register-${name}":
-        command  => "gitlab-ci-multi-runner register ${opts}",
+        command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
         onlyif   => "! grep ${description} ${toml_file}",
