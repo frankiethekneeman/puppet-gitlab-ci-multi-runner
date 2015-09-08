@@ -11,6 +11,6 @@ script:
     - find . -name *.pp | xargs puppet $PUPPETCOMMAND
 matrix:
     include:
-        - rvm: 2.2.12.2.1
+        - rvm: 2.2.1
           env: PUPPET_VERSION=4.2.1 PUPPETCOMMAND="parser validate"
 
