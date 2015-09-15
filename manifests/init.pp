@@ -114,8 +114,8 @@ class gitlab_ci_multi_runner (
                         /^[-+]/ => $nice,
                         default => "+${nice}"
                     } #The nice value passed to the daemon function must have a leading sign
-                    $sedSearch = ' daemon \\([+-][0-9]\\+ \\)\\?'
-                    $sefReplace = " daemon ${niceval} "
+                    $sedSearch = ' daemon \([+-][0-9]\+ \)\?'
+                    $sedReplace = " daemon ${niceval} "
                     exec {'Ensure Niceness':
                         command  => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
                         user     => root,
@@ -124,7 +124,8 @@ class gitlab_ci_multi_runner (
                         require  => Exec['Ensure Service'],
                         #Only if the niceness isn't already set:
                         onlyif   => "! grep 'daemon ${niceval} ' ${serviceFile}",
-                        notify   => Service[$service]
+                        notify   => Service[$service],
+                        logoutput => true,
                     }
                 }
                 '/etc/systemd/system/gitlab-runner.service': {
@@ -150,7 +151,7 @@ class gitlab_ci_multi_runner (
                     }
                 }
                 '/etc/init/gitlab-runner.conf': {
-                    $sedSearch = ' start-stop-daemon \\(-N [+-]\\?[0-9]\\+ \\)\\?'
+                    $sedSearch = ' start-stop-daemon \(-N [+-]\?[0-9]\+ \)\?'
                     $sedReplace = " start-stop-daemon -N ${nice} "
                     exec {'Ensure Niceness':
                         command  => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
