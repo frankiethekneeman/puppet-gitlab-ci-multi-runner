@@ -132,7 +132,9 @@ define gitlab_ci_multi_runner::runner (
     $ssh_password = undef,
     $require = [ Class['gitlab_ci_multi_runner'] ],
 ) {
-    $description = $name
+    # GitLab allows runner names with problematic characters like quotes
+    # Make sure they don't trip up the shell when executed
+    $description = shellquote($name)
 
     $user = 'gitlab_ci_multi_runner'
     $group = $user
