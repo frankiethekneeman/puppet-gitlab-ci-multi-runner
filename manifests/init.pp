@@ -117,14 +117,14 @@ class gitlab_ci_multi_runner (
                     $sedSearch = ' daemon \([+-][0-9]\+ \)\?'
                     $sedReplace = " daemon ${niceval} "
                     exec {'Ensure Niceness':
-                        command  => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
-                        user     => root,
-                        provider => shell,
-                        path     => $path,
-                        require  => Exec['Ensure Service'],
+                        command   => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
+                        user      => root,
+                        provider  => shell,
+                        path      => $path,
+                        require   => Exec['Ensure Service'],
                         #Only if the niceness isn't already set:
-                        onlyif   => "! grep 'daemon ${niceval} ' ${serviceFile}",
-                        notify   => Service[$service],
+                        onlyif    => "! grep 'daemon ${niceval} ' ${serviceFile}",
+                        notify    => Service[$service],
                         logoutput => true,
                     }
                 }
