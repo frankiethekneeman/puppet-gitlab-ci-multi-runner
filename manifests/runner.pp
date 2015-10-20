@@ -153,7 +153,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $description {
-        $description_opt = "--description=${description}"
+        $description_opt = "--name=${description}"
     }
 
     if $tags {
