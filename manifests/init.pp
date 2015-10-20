@@ -9,12 +9,18 @@
 #   -20 to +19.
 #   Default: undef.
 #
+# [*env*]
+#   Pass environment vars to the execs
+#   Useful for a proxy or the like.
+#   Default: undef.
+#
 # === Examples
 #
 #  include '::gitlab_ci_multi_runner'
 #
 class gitlab_ci_multi_runner (
-    $nice = undef
+    $nice = undef,
+    $env = undef,
 ) {
     $package_type = $::osfamily ? {
         'redhat' => 'rpm',
@@ -61,6 +67,8 @@ class gitlab_ci_multi_runner (
     $user = 'gitlab_ci_multi_runner'
 
     $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
+
+    if $env { Exec { environment => $env } }
 
     # Ensure the gitlab_ci_multi_runner user exists.
     # TODO:  Investigate if this is necessary - install script may handle this.
