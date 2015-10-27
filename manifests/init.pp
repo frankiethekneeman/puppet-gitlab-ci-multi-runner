@@ -20,7 +20,7 @@
 #
 class gitlab_ci_multi_runner (
     $nice = undef,
-    $env = undef,
+    $env = undef
 ) {
     $package_type = $::osfamily ? {
         'redhat' => 'rpm',
