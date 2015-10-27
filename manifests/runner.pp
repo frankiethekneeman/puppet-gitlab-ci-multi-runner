@@ -19,6 +19,10 @@
 #   CI Token.
 #   Default: undef.
 #
+# [*env*]
+#   Custom environment variables injected to build environment.
+#   Default: undef.
+#
 # [*executor*]
 #   Executor - Shell, parallels, ssh, docker etc.
 #   Default: undef.
@@ -100,6 +104,7 @@ define gitlab_ci_multi_runner::runner (
     $gitlab_ci_url = undef,
     $tags = undef,
     $token = undef,
+    $env = undef,
     $executor = undef,
 
     ########################################################
@@ -165,8 +170,13 @@ define gitlab_ci_multi_runner::runner (
         $token_opt = "--registration-token=${token}"
     }
 
+    if $env {
+        $envarry = prefix(any2array($env),'--env=')
+        $env_opts = join($envarry,' ')
+    }
+
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt}"
+    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts}"
 
     if $executor {
         $executor_opt = "--executor=${executor}"
