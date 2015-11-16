@@ -158,7 +158,10 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $description {
-        $description_opt = "--description=${description}"
+        $description_opt = $::gitlab_ci_multi_runner::version ? {
+            /^0\.[0-4]\..*/ => "--description=${description}",
+            default         => "--name=${description}",
+        }
     }
 
     if $tags {
