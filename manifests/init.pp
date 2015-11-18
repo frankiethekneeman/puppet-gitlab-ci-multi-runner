@@ -14,13 +14,25 @@
 #   Useful for a proxy or the like.
 #   Default: undef.
 #
+# [*manage_user*]
+#   Do you want to manage the user
+#   You may want to turn off if you use root.
+#   Default: true.
+#
+# [*user*]
+#   The user to manage or run as
+#   You may want to use root.
+#   Default: gitlab_ci_multi_runner.
+#
 # === Examples
 #
 #  include '::gitlab_ci_multi_runner'
 #
 class gitlab_ci_multi_runner (
     $nice = undef,
-    $env = undef
+    $env = undef,
+    $manage_user = true,
+    $user = 'gitlab_ci_multi_runner'
 ) {
     $package_type = $::osfamily ? {
         'redhat' => 'rpm',
@@ -64,18 +76,19 @@ class gitlab_ci_multi_runner (
         default   => 'gitlab-runner',
     }
 
-    $user = 'gitlab_ci_multi_runner'
-
     $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
 
     if $env { Exec { environment => $env } }
 
     # Ensure the gitlab_ci_multi_runner user exists.
     # TODO:  Investigate if this is necessary - install script may handle this.
-    user { $user:
-        ensure     => 'present',
-        managehome => true,
-    } ->
+    if $manage_user {
+      user { $user:
+          ensure     => 'present',
+          managehome => true,
+          before     => Exec['Add Repository'],
+      }
+    }
     # Add The repository to yum/deb-get
     exec { 'Add Repository':
         command  => "curl -L ${repoScript}/script.${package_type}.sh | bash",
