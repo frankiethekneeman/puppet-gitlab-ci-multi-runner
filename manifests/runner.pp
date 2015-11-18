@@ -7,6 +7,11 @@
 #
 # === Parameters
 #
+# [*user*]
+#   The user to manage or run as
+#   You may want to use root.
+#   Default: gitlab_ci_multi_runner.
+#
 # [*gitlab_ci_url*]
 #   URL of the Gitlab Server.
 #   Default: undef.
@@ -96,6 +101,8 @@
 #  }
 #
 define gitlab_ci_multi_runner::runner (
+    $user = 'gitlab_ci_multi_runner',
+
     ########################################################
     # Runner Options                                       #
     # Used By all Executors.                               #
@@ -141,12 +148,14 @@ define gitlab_ci_multi_runner::runner (
     # Make sure they don't trip up the shell when executed
     $description = shellquote($name)
 
-    $user = 'gitlab_ci_multi_runner'
-    $group = $user
-    $home_path = "/home/${user}"
-    $toml_file = $::gitlab_ci_multi_runner::version ? {
-        /^0\.[0-4]\..*/ => "${home_path}/config.toml",
-        default         => "${home_path}/.gitlab-runner/config.toml",
+    if $user == 'root' {
+      $toml_file = '/etc/gitlab-runner/config.toml'
+    } else {
+      $home_path = "/home/${user}"
+      $toml_file = $::gitlab_ci_multi_runner::version ? {
+          /^0\.[0-4]\..*/ => "${home_path}/config.toml",
+          default         => "${home_path}/.gitlab-runner/config.toml",
+      }
     }
 
     # Here begins the arduous, manual process of taking each argument
