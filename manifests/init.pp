@@ -65,6 +65,11 @@ class gitlab_ci_multi_runner (
     }
 
     $user = 'gitlab_ci_multi_runner'
+    $home_path = "/home/${user}"
+    $toml_file = $::gitlab_ci_multi_runner::version ? {
+        /^0\.[0-4]\..*/ => "${home_path}/config.toml",
+        default         => "${home_path}/.gitlab-runner/config.toml",
+    }
 
     $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
 
@@ -88,7 +93,7 @@ class gitlab_ci_multi_runner (
         ensure => $version,
     } ->
     exec { 'Ensure Service':
-        command  => "${service} install --user ${user}",
+        command  => "${service} install --user ${user} --config ${toml_file} --working-directory ${home_path}",
         user     => root,
         provider => shell,
         creates  => $serviceFile,
