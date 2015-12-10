@@ -88,7 +88,7 @@ class gitlab_ci_multi_runner (
         ensure => $version,
     } ->
     exec { 'Ensure Service':
-        command  => "${service} install",
+        command  => "${service} install --user ${user}",
         user     => root,
         provider => shell,
         creates  => $serviceFile,
