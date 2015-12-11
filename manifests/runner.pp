@@ -135,7 +135,7 @@ define gitlab_ci_multi_runner::runner (
     $ssh_port = undef,
     $ssh_user = undef,
     $ssh_password = undef,
-    $require = [ Class['gitlab_ci_multi_runner'] ],
+    $require = [ Class['gitlab_ci_multi_runner'] ]
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
