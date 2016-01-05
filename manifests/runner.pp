@@ -240,7 +240,6 @@ define gitlab_ci_multi_runner::runner (
     # --non-interactive means it won't ask us for things, it'll just fail out.
     exec { "Register-${name}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
-        user     => $user,
         provider => shell,
         onlyif   => "! grep ${description} ${toml_file}",
         cwd      => $home_path,
