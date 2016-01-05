@@ -51,6 +51,14 @@
 #   Mongo version (X.Y) or latest.
 #   Default: undef.
 #
+# [*docker_allowed_images*]
+#   Array of wildcard list of images that can be specified in .gitlab-ci.yml
+#   Default: undef.
+#
+# [*docker_allowed_services*]
+#   Array of wildcard list of services that can be specified in .gitlab-ci.yml
+#   Default: undef.
+#
 # [*parallels_vm*]
 #   The Parallels VM (eg. my-vm).
 #   Default: undef.
@@ -118,6 +126,8 @@ define gitlab_ci_multi_runner::runner (
     $docker_postgres = undef,
     $docker_redis = undef,
     $docker_mongo = undef,
+    $docker_allowed_images = undef,
+    $docker_allowed_services = undef,
 
     ########################################################
     # Parallels Options                                    #
@@ -209,7 +219,23 @@ define gitlab_ci_multi_runner::runner (
         $docker_mongo_opt = "--docker-mongo=${docker_mongo}"
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt}"
+    if $docker_allowed_images {
+        $docker_allowed_images_opt = inline_template(
+          "<% @docker_allowed_images.each do |image| -%>
+            --docker-allowed-images=<%= \"'#{image}'\" -%>
+            <% end -%>"
+        )
+    }
+
+    if $docker_allowed_services {
+        $docker_allowed_services_opt = inline_template(
+          "<% @docker_allowed_services.each do |service| -%>
+            --docker-allowed-services=<%= \"'#{service}'\" -%>
+            <% end -%>"
+        )
+    }
+
+    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
