@@ -37,6 +37,18 @@ gitlab_ci_multi_runner::runner { "This is My Second Runner":
     ssh_user      => 'mister-ci',
     ssh_password  => 'password123'
 }
+
+gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
+    gitlab_ci_url           => 'http://ci.gitlab.examplecorp.com'
+    tags                    => ['tag', 'tag2','docker', 'container'],
+    token                   => 'sometoken'
+    executor                => 'docker',
+    docker_image            => 'ruby:2.1',
+    docker_postgres         => '9.5',
+    docker_allowed_services => ['elasticsearch', 'memcached', 'haproxy'],
+    docker_allowed_images   => ['ruby', 'wordpress'],
+    docker_volumes          => ['/var/run/docker.sock:/var/run/docker.sock', '/src/webapp:/opt/webapp']
+}
 ```
 
 ##Installation Options
@@ -91,6 +103,11 @@ Any truthy value will set this off.
 
 ####docker\_mongo
 > If you want to enable mongo please enter version (X.Y) or enter latest
+
+####docker\_volumes
+> Specify a list of volumes that are being mounted to every docker container spawned by a docker
+executor. For details see the
+[official documentation about docker volumes](https://docs.docker.com/engine/userguide/containers/dockervolumes/).
 
 ###Parallels Options
 Used by the "Parallels" executor.

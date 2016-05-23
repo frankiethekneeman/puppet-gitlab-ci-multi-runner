@@ -64,6 +64,10 @@
 #   Array of wildcard list of services that can be specified in .gitlab-ci.yml
 #   Default: undef.
 #
+# [*docker_volumes*]
+#   Array of volumes that will be mounted to every docker container used for builds.
+#   Default: undef.
+#
 # [*parallels_vm*]
 #   The Parallels VM (eg. my-vm).
 #   Default: undef.
@@ -108,6 +112,18 @@
 #      ssh_password  => 'password123'
 #  }
 #
+#  gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
+#      gitlab_ci_url           => 'http://ci.gitlab.examplecorp.com'
+#      tags                    => ['tag', 'tag2','npm', 'grunt'],
+#      token                   => 'sometoken'
+#      executor                => 'docker',
+#      docker_image            => 'ruby:2.1',
+#      docker_postgres         => '9.5',
+#      docker_allowed_services => ['elasticsearch', 'memcached', 'haproxy'],
+#      docker_allowed_images   => ['ruby', 'wordpress'],
+#      docker_volumes          => ['/var/run/docker.sock:/var/run/docker.sock', '/src/webapp:/opt/webapp']
+#  }
+#
 define gitlab_ci_multi_runner::runner (
     $user = 'gitlab_ci_multi_runner',
 
@@ -135,6 +151,7 @@ define gitlab_ci_multi_runner::runner (
     $docker_mongo = undef,
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
+    $docker_volumes = undef,
 
     ########################################################
     # Parallels Options                                    #
@@ -234,7 +251,15 @@ define gitlab_ci_multi_runner::runner (
         )
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt}"
+    if $docker_volumes {
+        $docker_volumes_opt = inline_template(
+          "<% @docker_volumes.each do |volume| -%>
+            --docker-volumes=<%= \"'#{volume}'\" -%>
+            <% end -%>"
+        )
+    }
+
+    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
