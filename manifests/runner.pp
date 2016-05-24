@@ -7,6 +7,11 @@
 #
 # === Parameters
 #
+# [*user*]
+#   The user to manage or run as
+#   You may want to use root.
+#   Default: gitlab_ci_multi_runner.
+#
 # [*gitlab_ci_url*]
 #   URL of the Gitlab Server.
 #   Default: undef.
@@ -104,6 +109,8 @@
 #  }
 #
 define gitlab_ci_multi_runner::runner (
+    $user = 'gitlab_ci_multi_runner',
+
     ########################################################
     # Runner Options                                       #
     # Used By all Executors.                               #
@@ -150,14 +157,6 @@ define gitlab_ci_multi_runner::runner (
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
     $description = shellquote($name)
-
-    $user = 'gitlab_ci_multi_runner'
-    $group = $user
-    $home_path = "/home/${user}"
-    $toml_file = $::gitlab_ci_multi_runner::version ? {
-        /^0\.[0-4]\..*/ => "${home_path}/config.toml",
-        default         => "${home_path}/.gitlab-runner/config.toml",
-    }
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -268,7 +267,8 @@ define gitlab_ci_multi_runner::runner (
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
-        onlyif   => "! grep ${description} ${toml_file}",
+
+        onlyif   => "! grep ${description} ${::gitlab_ci_multi_runner::version}",
         cwd      => $home_path,
         require  => $require,
     }
