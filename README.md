@@ -17,24 +17,24 @@ use the most current release
 
 ```puppet
 class {'gitlab_ci_multi_runner': 
-    nice => 15
+    nice => '15'
 }
 
 gitlab_ci_multi_runner::runner { "This is My Runner":
-    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com',
     tags          => ['tag', 'tag2','java', 'php'],
-    token         => 'sometoken'
+    token         => 'sometoken',
     executor      => 'shell',
 }
 
 gitlab_ci_multi_runner::runner { "This is My Second Runner":
-    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
+    gitlab_ci_url => 'http://ci.gitlab.examplecorp.com',
     tags          => ['tag', 'tag2','npm', 'grunt'],
     token         => 'sometoken'
     executor      => 'ssh',
-    ssh_host      => 'cirunners.examplecorp.com'
-    ssh_port      => 22
-    ssh_user      => 'mister-ci'
+    ssh_host      => 'cirunners.examplecorp.com',
+    ssh_port      => 22,
+    ssh_user      => 'mister-ci',
     ssh_password  => 'password123'
 }
 ```
