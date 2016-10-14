@@ -263,7 +263,6 @@ define gitlab_ci_multi_runner::runner (
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    notice("! grep ${description} ${::gitlab_ci_multi_runner::toml_file}")
     exec { "Register-${name}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
