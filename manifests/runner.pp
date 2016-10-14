@@ -268,7 +268,7 @@ define gitlab_ci_multi_runner::runner (
         user     => $user,
         provider => shell,
 
-        onlyif   => "! grep ${description} ${::gitlab_ci_multi_runner::version}",
+        onlyif   => "! grep ${description} ${::gitlab_ci_multi_runner::toml_file}",
         cwd      => $home_path,
         require  => $require,
     }
