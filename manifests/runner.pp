@@ -64,6 +64,10 @@
 #   Array of wildcard list of services that can be specified in .gitlab-ci.yml
 #   Default: undef.
 #
+# [*docker_volumes*]
+#   Array of directories to mount into the containers created
+#   Default: undef.
+#
 # [*parallels_vm*]
 #   The Parallels VM (eg. my-vm).
 #   Default: undef.
@@ -135,6 +139,7 @@ define gitlab_ci_multi_runner::runner (
     $docker_mongo = undef,
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
+    $docker_volumes = undef,
 
     ########################################################
     # Parallels Options                                    #
@@ -234,7 +239,15 @@ define gitlab_ci_multi_runner::runner (
         )
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt}"
+    if $docker_volumes {
+        $docker_volumes_opt = inline_template(
+          "<% @docker_volumes.each do |volume| -%>
+            --docker-volumes=<%= \"'#{volume}'\" -%>
+            <% end -%>"
+        )
+    }
+
+    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
