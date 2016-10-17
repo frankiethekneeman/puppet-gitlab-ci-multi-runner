@@ -140,6 +140,21 @@ define gitlab_ci_multi_runner::runner (
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
     $docker_volumes = undef,
+    $docker_host = undef,
+    $docker_cert_path = undef,
+    $docker_tlsverify = undef,
+
+    ########################################################
+    # Machine Options                                      #
+    # Used by the Docker-Machine executor                  #
+    ########################################################
+
+    $machine_idle_nodes = undef,
+    $machine_idle_time = undef,
+    $machine_max_builds = undef,
+    $machine_machine_driver = undef,
+    $machine_machine_name = undef,
+    $machine_machine_options = undef,
 
     ########################################################
     # Parallels Options                                    #
@@ -247,7 +262,19 @@ define gitlab_ci_multi_runner::runner (
         )
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
+    if $docker_host {
+        $docker_host_opt = "--docker-host=${docker_host}"
+    }
+
+    if $docker_cert_path {
+        $docker_cert_path_opt = "--docker-cert-path=${docker_cert_path}"
+    }
+
+    if $docker_tlsverify {
+        $docker_tlsverify_opt = "docker-tlsverify=${docker_tlsverify}"
+    }
+
+    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
@@ -271,7 +298,37 @@ define gitlab_ci_multi_runner::runner (
 
     $ssh_opts = "${ssh_host_opt} ${ssh_port_opt} ${ssh_user_opt} ${ssh_password_opt}"
 
-    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts}"
+    if $machine_idle_nodes {
+        $machine_idle_nodes_opt = "--machine-idle-nodes=${machine_idle_nodes}"
+    }
+
+    if $machine_idle_time {
+        $machine_idle_time_opt = "--machine-idle-time=${machine_idle_time}"
+    }
+
+    if $machine_max_builds {
+        $machine_max_builds_opt = "--machine-max-builds=${machine_max-builds}"
+    }
+
+    if $machine_machine_driver {
+        $machine_machine_driver_opt = "--machine-machine-driver=${machine_machine-driver}"
+    }
+    
+    if $machine_machine_name {
+        $machine_machine_name_opt = "--machine-machine-name=${machine_machine_name}"
+    }
+
+    if $machine_machine_options {
+        $machine_machine_options_opt = inline_template(
+          "<% @docker_machine_options.each do |options| -%>
+            --machine-machine-options=<%= \"'#{options}'\" -%>
+            <% end -%>"
+        )
+    }
+    
+    $machine_opts="${machine_idle_nodes_opt} ${machine_idle_time_opt} ${machine_max_builds_opt} ${machine_machine_driver_opt} ${machine_machine_name_opt} ${machine_machine_options_opt}"
+
+    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts}"
 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
