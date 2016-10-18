@@ -172,6 +172,20 @@ define gitlab_ci_multi_runner::runner (
     $ssh_port = undef,
     $ssh_user = undef,
     $ssh_password = undef,
+
+
+    $kubernetes_host = undef,
+    $kubernetes_cert_file = undef,
+    $kubernetes_key_file = undef,
+    $kubernetes_ca_file = undef,
+    $kubernetes_image = undef,
+    $kubernetes_namespace = undef,
+    $kubernetes_priviledged = undef,
+    $kubernetes_cpus = undef,
+    $kubernetes_memory = undef,
+    $kubernetes_service_cpus = undef,
+    $kubernetes_service_memory = undef,
+
     $require = [ Class['gitlab_ci_multi_runner'] ]
 ) {
     # GitLab allows runner names with problematic characters like quotes
@@ -328,7 +342,53 @@ define gitlab_ci_multi_runner::runner (
     
     $machine_opts="${machine_idle_nodes_opt} ${machine_idle_time_opt} ${machine_max_builds_opt} ${machine_machine_driver_opt} ${machine_machine_name_opt} ${machine_machine_options_opt}"
 
-    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts}"
+    if $kubernetes_host {
+        $kubernetes_host_opt="--kubernetes-host=${kubernetes_host}"
+    }
+
+    if $kubernetes_cert_file {
+        $kubernetes_cert_file_opt="--kubernetes_cert_file=${kubernetes_cert_file}"
+    }
+
+    if $kubernetes_key_file {
+        $kubernetes_key_file_opt="--kubernetes-key-file=${kubernetes_key_file}"
+    }
+
+    if $kubernetes_ca_file {
+        $kubernetes_ca_file_opt="--kubernetes-ca-file=${kubernetes_ca_file}"
+    }
+
+    if $kubernetes_image {
+        $kubernetes_image_opt="--kubernetes_image=${kubernetes-image}"
+    }
+
+    if $kubernetes_namespace {
+        $kubernetes_namespace_opt="--kubernetes-namespace=${kubernetes_namespace}"
+    }
+
+    if $kubernetes_priviledged {
+        $kubernetes_priviledged_opt="--kubernetes-priviledged=${kubernetes_priviledged}"
+    }
+
+    if $kubernetes_cpus {
+        $kubernetes_cpus_opt="--kubernetes-cpus=${kubernetes_cpus}"
+    }
+
+    if $kubernetes_memory {
+        $kubernetes_memory_opt="--kubernetes-memory=${kubernetes_memory}"
+    }
+
+    if $kubernetes_service_cpus {
+        $kubernetes_service_cpus_opt="--kubernetes-service-cpus=${kubernetes_service_cpus}"
+    }
+
+    if $kubernetes_service_memory {
+        $kubernetes_service_memory_opt="--kubernetes-service-memory=${kubernetes_service_memory}"
+    }
+
+    $kubernetes_opts="${kubernetes_host_opt} ${kubernetes_cert_file_opt} ${kubernetes_key_file_opt} ${kubernetes_ca_file_opt} ${kubernetes_image_opt} ${kubernetes_namespace_opt} ${kubernetes_priviledged_opt} ${kubernetes_cpus_opt} ${kubernetes_memory_opt} ${kubernetes_service_cpus_opt} ${kubernetes_service_memory_opt}"
+
+    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts} ${kubernetes_opts}"
 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
