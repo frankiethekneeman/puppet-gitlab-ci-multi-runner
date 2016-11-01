@@ -2,7 +2,6 @@ rvm: 1.8.7
 notifications:
     email: false
 env:
-    - PUPPET_VERSION=3.8.2 PUPPETCOMMAND="parser validate"
     - PUPPET_VERSION=2.6.18 PUPPETCOMMAND=" --parseonly --ignoreimport"
     - PUPPET_VERSION=2.7.26 PUPPETCOMMAND="parser validate"
 script:
@@ -12,4 +11,6 @@ matrix:
     include:
         - rvm: 2.2.1
           env: PUPPET_VERSION=4.2.1 PUPPETCOMMAND="parser validate"
+        - rvm: 2.2.1
+          env: PUPPET_VERSION=3.8.2 PUPPETCOMMAND="parser validate"
 
