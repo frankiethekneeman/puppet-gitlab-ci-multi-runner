@@ -11,6 +11,6 @@ matrix:
     include:
         - rvm: 2.2.1
           env: PUPPET_VERSION=4.2.1 PUPPETCOMMAND="parser validate"
-        - rvm: 2.2.1
-          env: PUPPET_VERSION=3.8.2 PUPPETCOMMAND="parser validate"
+#        - rvm: 2.2.1
+#          env: PUPPET_VERSION=3.8.2 PUPPETCOMMAND="parser validate"
 
