@@ -78,7 +78,6 @@ class gitlab_ci_multi_runner (
     } else {
         $theVersion = $version
     }
-    notice("Will install version $theVersion, user requested version was $version")
 
     $service = $theVersion ? {
         '0.4.2-1' => 'gitlab-ci-multi-runner',
