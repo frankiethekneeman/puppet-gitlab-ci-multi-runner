@@ -70,9 +70,9 @@ class gitlab_ci_multi_runner (
         $theVersion = $::osfamily ? {
             'redhat' => $::operatingsystemrelease ? {
                 /^(5.*|6.*)/ => '0.4.2-1',
-                default      => '1.7.1',
+                default      => 'latest',
             },
-            'debian' => 'latest',
+            'debian' => '1.7.1',
             default  => 'There is no spoon',
         }
     }
