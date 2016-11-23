@@ -67,7 +67,7 @@ class gitlab_ci_multi_runner (
     }
 
     if !$version {
-        $version = $::osfamily ? {
+        $theVersion = $::osfamily ? {
             'redhat' => $::operatingsystemrelease ? {
                 /^(5.*|6.*)/ => '0.4.2-1',
                 default      => 'latest',
@@ -77,7 +77,7 @@ class gitlab_ci_multi_runner (
         }
     }
 
-    $service = $version ? {
+    $service = $theVersion ? {
         '0.4.2-1' => 'gitlab-ci-multi-runner',
         default   => 'gitlab-runner',
     }
@@ -89,7 +89,7 @@ class gitlab_ci_multi_runner (
 
     $toml_file = $user ? {
         "root"  => '/etc/gitlab-runner/config.toml',
-        default => $::gitlab_ci_multi_runner::version ? {
+        default => $::gitlab_ci_multi_runner::theVersion ? {
             /^0\.[0-4]\..*/ => "${home_path}/config.toml",
             default         => "${home_path}/.gitlab-runner/config.toml",
         },
@@ -117,7 +117,7 @@ class gitlab_ci_multi_runner (
     } ->
     # Install the package after the repo has been added.
     package { 'gitlab-ci-multi-runner':
-        ensure => $version,
+        ensure => $theVersion,
     } ->
     exec { 'Ensure Service':
         command  => "${service} install --user ${user} --config ${toml_file} --working-directory ${home_path}",
