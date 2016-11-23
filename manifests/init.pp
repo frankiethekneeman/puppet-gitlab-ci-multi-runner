@@ -75,6 +75,8 @@ class gitlab_ci_multi_runner (
             'debian' => '1.7.1',
             default  => 'There is no spoon',
         }
+    } else {
+        $theVersion = $version
     }
     notice("Will install version $theVersion, user requested version was $version")
 
