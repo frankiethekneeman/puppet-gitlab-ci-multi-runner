@@ -88,6 +88,13 @@ separated list of tags.
 
 The Runner is packages with a "Parallels" Executor as well.
 
+####run\_untagged
+> Run builds without tag: true, false?
+
+If you want this runner to execute builds without a tag given in .gitlab-ci.yml.
+When undefined Gitlab defaults to true if no list of tags for this runner is
+specified otherwise false.
+
 ### Docker Options
 Used by the Docker and Docker SSH executors.
 

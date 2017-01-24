@@ -28,6 +28,10 @@
 #   Custom environment variables injected to build environment.
 #   Default: undef.
 #
+# [*run_untagged*]
+#   Whether this runner runs builds without a tag.
+#   Default: undef.
+#
 # [*executor*]
 #   Executor - Shell, parallels, ssh, docker etc.
 #   Default: undef.
@@ -104,7 +108,7 @@
 #  gitlab_ci_multi_runner::runner { "This is My Second Runner":
 #      gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
 #      tags          => ['tag', 'tag2','npm', 'grunt'],
-#      token         => 'sometoken'
+#      token         => 'sometoken',
 #      executor      => 'ssh',
 #      ssh_host      => 'cirunners.examplecorp.com'
 #      ssh_port      => 22
@@ -137,6 +141,7 @@ define gitlab_ci_multi_runner::runner (
     $token = undef,
     $env = undef,
     $executor = undef,
+    $run_untagged = undef,
 
     ########################################################
     # Docker Options                                       #
@@ -204,8 +209,18 @@ define gitlab_ci_multi_runner::runner (
         $env_opts = join($envarry,' ')
     }
 
+    if $run_untagged != undef {
+        $run_untagged_opt = '--run_untagged'
+        if $run_untagged {
+            $run_untagged_opt = "${run_tagged_opt}=true"
+        }
+        else {
+            $run_untagged_opt = "${run_tagged_opt}=false"
+        }
+    }
+
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts}"
+    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
 
     if $executor {
         $executor_opt = "--executor=${executor}"
