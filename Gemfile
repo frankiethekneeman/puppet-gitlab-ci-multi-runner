@@ -5,5 +5,6 @@ else
       puppetversion = ['>= 2.7']
 end
 
+gem 'json'
 gem 'puppet-lint'
 gem 'puppet', puppetversion
