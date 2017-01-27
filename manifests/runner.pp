@@ -210,14 +210,14 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $run_untagged != undef {
-        $run_untagged_opt = '--run_untagged'
         if $run_untagged {
-            $run_untagged_opt = "${run_tagged_opt}=true"
+            $run_untagged_opt = "--run-untagged=true"
         }
         else {
-            $run_untagged_opt = "${run_tagged_opt}=false"
+            $run_untagged_opt = "--run-untagged=false"
         }
     }
+
 
     # I group like arguments together so my final opstring won't be so giant.
     $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
