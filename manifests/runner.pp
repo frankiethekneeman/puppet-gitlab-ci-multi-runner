@@ -65,7 +65,7 @@
 #   Default: undef.
 #
 # [*docker_volumes*]
-#   Array of directories to mount into the containers created
+#   Array of volumes that will be mounted to every docker container used for builds.
 #   Default: undef.
 #
 # [*parallels_vm*]
@@ -110,6 +110,18 @@
 #      ssh_port      => 22
 #      ssh_user      => 'mister-ci'
 #      ssh_password  => 'password123'
+#  }
+#
+#  gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
+#      gitlab_ci_url           => 'http://ci.gitlab.examplecorp.com'
+#      tags                    => ['tag', 'tag2','npm', 'grunt'],
+#      token                   => 'sometoken'
+#      executor                => 'docker',
+#      docker_image            => 'ruby:2.1',
+#      docker_postgres         => '9.5',
+#      docker_allowed_services => ['elasticsearch', 'memcached', 'haproxy'],
+#      docker_allowed_images   => ['ruby', 'wordpress'],
+#      docker_volumes          => ['/var/run/docker.sock:/var/run/docker.sock', '/src/webapp:/opt/webapp']
 #  }
 #
 define gitlab_ci_multi_runner::runner (
@@ -288,7 +300,8 @@ define gitlab_ci_multi_runner::runner (
         $docker_tlsverify_opt = "docker-tlsverify=${docker_tlsverify}"
     }
 
-    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
+    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} 
+    ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
