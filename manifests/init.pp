@@ -81,13 +81,15 @@ class gitlab_ci_multi_runner (
         default => "/home/${user}",
     }
 
-    $toml_file = $user ? {
-        "root"  => '/etc/gitlab-runner/config.toml',
+    $toml_path = $user ? {
+        "root"  => '/etc/gitlab-runner',
         default => $::gitlab_ci_multi_runner::version ? {
-            /^0\.[0-4]\..*/ => "${home_path}/config.toml",
-            default         => "${home_path}/.gitlab-runner/config.toml",
+            /^0\.[0-4]\..*/ => "${home_path}",
+            default         => "${home_path}/.gitlab-runner",
         },
     }
+
+    $toml_file = "$toml_path/config.toml"
 
     $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
 
@@ -124,6 +126,11 @@ class gitlab_ci_multi_runner (
         user     => root,
         provider => shell,
         creates  => $serviceFile,
+    } ->
+    file { 'Ensure .gitlab-runner directory is owned by correct user':
+        path => $toml_path,
+        owner => $user,
+        recurse => true,
     } ->
     # Ensure that the service is running at all times.
     service { $service:
