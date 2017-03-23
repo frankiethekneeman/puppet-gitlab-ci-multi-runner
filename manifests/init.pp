@@ -5,15 +5,17 @@
 # === Parameters
 #
 # [*nice*]
-#   A Niceness value for the Service to limit resources on shared machines.  Valid values from
-#   -20 to +19.
+#   A Niceness value for the Service to limit resources on shared machines.
+#   Valid values from -20 to +19.
 #   Default: undef.
 #
 # [*version*]
-#   A version for the gitlab-ci-multi-runner package. This can be to a specfic version number,
-#   present (if you don't want Puppet to update it for you) or latest.
+#   A version for the gitlab-ci-multi-runner package. This can be to a specfic
+#   version number, present (if you don't want Puppet to update it for you) or
+#   latest.
 #
-#   The version of the package will always be set to v0.4.2 for RHEL5 and RHEL 6 derivatives.
+#   The version of the package will always be set to v0.4.2 for RHEL5 and RHEL
+#   6 derivatives.
 #   Default: latest
 #
 # [*env*]
@@ -80,19 +82,19 @@ class gitlab_ci_multi_runner (
     }
 
     $home_path = $user ? {
-        "root"  => "/root",
+        'root'  => '/root',
         default => "/home/${user}",
     }
 
     $toml_path = $user ? {
-        "root"  => '/etc/gitlab-runner',
+        'root'  => '/etc/gitlab-runner',
         default => $::gitlab_ci_multi_runner::version ? {
-            /^0\.[0-4]\..*/ => "${home_path}",
+            /^0\.[0-4]\..*/ => $home_path,
             default         => "${home_path}/.gitlab-runner",
         },
     }
 
-    $toml_file = "$toml_path/config.toml"
+    $toml_file = "${toml_path}/config.toml"
 
     $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
 
@@ -131,8 +133,8 @@ class gitlab_ci_multi_runner (
         creates  => $serviceFile,
     } ->
     file { 'Ensure .gitlab-runner directory is owned by correct user':
-        path => $toml_path,
-        owner => $user,
+        path    => $toml_path,
+        owner   => $user,
         recurse => true,
     } ->
     # Ensure that the service is running at all times.
@@ -140,7 +142,7 @@ class gitlab_ci_multi_runner (
         ensure => 'running',
     }
 
-    # Stop the package being updated where a specific version is specified (used for redhat 5 and 6)
+    # Stop the package being updated where a specific version is specified
     if ! ($version in ['latest', 'present']) {
         exec { 'Yum Exclude Line':
             command  => 'echo exclude= >> /etc/yum.conf',

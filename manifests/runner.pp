@@ -178,7 +178,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $description = shellquote($name)
+    $description = shellquote($::name)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -211,10 +211,10 @@ define gitlab_ci_multi_runner::runner (
 
     if $run_untagged != undef {
         if $run_untagged {
-            $run_untagged_opt = "--run-untagged=true"
+            $run_untagged_opt = '--run-untagged=true'
         }
         else {
-            $run_untagged_opt = "--run-untagged=false"
+            $run_untagged_opt = '--run-untagged=false'
         }
     }
 
@@ -303,7 +303,7 @@ define gitlab_ci_multi_runner::runner (
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    exec { "Register-${name}":
+    exec { "Register-${::name}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
