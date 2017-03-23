@@ -33,7 +33,7 @@ class gitlab_ci_multi_runner (
     $env = undef,
     $manage_user = true,
     $user = 'gitlab_ci_multi_runner',
-    $version = latest,
+    $version = 'latest'
 ) {
     $package_type = $::osfamily ? {
         'redhat' => 'rpm',
