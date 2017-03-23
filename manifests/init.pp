@@ -33,7 +33,7 @@ class gitlab_ci_multi_runner (
     $env = undef,
     $manage_user = true,
     $user = 'gitlab_ci_multi_runner',
-    $version,
+    $version = latest,
 ) {
     $package_type = $::osfamily ? {
         'redhat' => 'rpm',
@@ -63,16 +63,10 @@ class gitlab_ci_multi_runner (
         default => '/bin/true',
     }
 
-    if !$version {
-      $version = $::osfamily ? {
-          'redhat' => $::operatingsystemrelease ? {
-              /^(5.*|6.*)/ => '0.4.2-1',
-              default      => 'latest',
-          },
-          'debian' => 'latest',
-          default  => 'There is no spoon',
-      }
+    if ($::osfamily = 'redhat') and ($::operatingsystemrelease =~ /^(5.*|6.*)/) {
+        $version = '0.4.2-1'
     }
+
     $service = $version ? {
         '0.4.2-1' => 'gitlab-ci-multi-runner',
         default   => 'gitlab-runner',
