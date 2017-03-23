@@ -49,13 +49,13 @@ class gitlab_ci_multi_runner (
         'debian' => 'deb',
         default  => 'unknown',
     }
-    $issuesLink = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
+    $issues_link = 'https://github.com/frankiethekneeman/puppet-gitlab-ci-multi-runner/issues'
     if $package_type == 'unknown' {
         fail("Target Operating system (${::operatingsystem}) not supported")
     }
 
     # Get the file created by the "repo adding" step.
-    $repoLocation = $package_type ? {
+    $repo_location = $package_type ? {
         'rpm'   => '/etc/yum.repos.d/runner_gitlab-ci-multi-runner.repo',
         'deb'   => '/etc/apt/sources.list.d/runner_gitlab-ci-multi-runner.list',
         default => '/var',
@@ -63,7 +63,7 @@ class gitlab_ci_multi_runner (
         # to worry about it running in the case of an unknown package_type.
     }
 
-    $serviceFile = $package_type ? {
+    $service_file = $package_type ? {
         'rpm'   => $::operatingsystemrelease ? {
             /^(5.*|6.*)/ => '/etc/init.d/gitlab-ci-multi-runner',
             default      => '/etc/systemd/system/gitlab-runner.service',
@@ -96,7 +96,7 @@ class gitlab_ci_multi_runner (
 
     $toml_file = "${toml_path}/config.toml"
 
-    $repoScript = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
+    $repo_script = 'https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner'
 
     if $env { Exec { environment => $env } }
 
@@ -111,10 +111,10 @@ class gitlab_ci_multi_runner (
     }
     # Add The repository to yum/deb-get
     exec { 'Add Repository':
-        command  => "curl -L ${repoScript}/script.${package_type}.sh | bash",
+        command  => "curl -L ${repo_script}/script.${package_type}.sh | bash",
         user     => root,
         provider => shell,
-        creates  => $repoLocation,
+        creates  => $repo_location,
     } ->
     # Install the package after the repo has been added.
     package { 'gitlab-ci-multi-runner':
@@ -124,13 +124,13 @@ class gitlab_ci_multi_runner (
         command  => "service ${service} stop; ${service} uninstall",
         user     => root,
         provider => shell,
-        unless   => "grep '${toml_file}' ${serviceFile}",
+        unless   => "grep '${toml_file}' ${service_file}",
     } ->
     exec { 'Ensure Service':
         command  => "${service} install --user ${user} --config ${toml_file} --working-directory ${home_path}",
         user     => root,
         provider => shell,
-        creates  => $serviceFile,
+        creates  => $service_file,
     } ->
     file { 'Ensure .gitlab-runner directory is owned by correct user':
         path    => $toml_path,
@@ -161,38 +161,38 @@ class gitlab_ci_multi_runner (
     if $nice != undef {
         if $nice =~ /^(-20|[-+]?1?[0-9])$/ {
             $path = '/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin'
-            case $serviceFile {
+            case $service_file {
                 '/etc/init.d/gitlab-ci-multi-runner': {
                     $niceval = $nice ? {
                         /^[-+]/ => $nice,
                         default => "+${nice}"
                     } #The nice value passed to the daemon function must have a leading sign
-                    $sedSearch = ' daemon \([+-][0-9]\+ \)\?'
-                    $sedReplace = " daemon ${niceval} "
+                    $sed_search = ' daemon \([+-][0-9]\+ \)\?'
+                    $sed_replace = " daemon ${niceval} "
                     exec {'Ensure Niceness':
-                        command   => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
+                        command   => "sed -i 's/${sed_search}/${sed_replace}/g' ${service_file}",
                         user      => root,
                         provider  => shell,
                         path      => $path,
                         require   => Exec['Ensure Service'],
                         #Only if the niceness isn't already set:
-                        onlyif    => "! grep 'daemon ${niceval} ' ${serviceFile}",
+                        onlyif    => "! grep 'daemon ${niceval} ' ${service_file}",
                         notify    => Service[$service],
                         logoutput => true,
                     }
                 }
                 '/etc/systemd/system/gitlab-runner.service': {
-                    $initCommand = "sed -i '/\\[Service\\]/a Nice=${nice}' ${serviceFile}"
-                    $updateCommand = "sed -i 's/Nice=[+-]\\?[0-9]\\+/Nice=${nice}/g' ${serviceFile}"
-                    $checkCommand = "grep 'Nice=[+-]\\?[0-9]\\+' ${serviceFile}"
+                    $init_command = "sed -i '/\\[Service\\]/a Nice=${nice}' ${service_file}"
+                    $update_command = "sed -i 's/Nice=[+-]\\?[0-9]\\+/Nice=${nice}/g' ${service_file}"
+                    $check_command = "grep 'Nice=[+-]\\?[0-9]\\+' ${service_file}"
                     exec {'Ensure Niceness':
-                        command  => "${checkCommand} && ${updateCommand} || ${initCommand}",
+                        command  => "${check_command} && ${update_command} || ${init_command}",
                         user     => root,
                         provider => shell,
                         path     => $path,
                         require  => Exec['Ensure Service'],
                         #Only if the niceness isn't already set:
-                        onlyif   => "! grep 'Nice=${nice} *\$' ${serviceFile}",
+                        onlyif   => "! grep 'Nice=${nice} *\$' ${service_file}",
                     } ~>
                     exec {'Reload Service Info': #Because Puppet won't automagically do this
                         command     => 'systemctl daemon-reload',
@@ -204,21 +204,21 @@ class gitlab_ci_multi_runner (
                     }
                 }
                 '/etc/init/gitlab-runner.conf': {
-                    $sedSearch = ' start-stop-daemon \(-N [+-]\?[0-9]\+ \)\?'
-                    $sedReplace = " start-stop-daemon -N ${nice} "
+                    $sed_search = ' start-stop-daemon \(-N [+-]\?[0-9]\+ \)\?'
+                    $sed_replace = " start-stop-daemon -N ${nice} "
                     exec {'Ensure Niceness':
-                        command  => "sed -i 's/${sedSearch}/${sedReplace}/g' ${serviceFile}",
+                        command  => "sed -i 's/${sed_search}/${sed_replace}/g' ${service_file}",
                         user     => root,
                         provider => shell,
                         path     => $path,
                         require  => Exec['Ensure Service'],
-                        onlyif   => "! grep 'start-stop-daemon -N ${nice} ' ${serviceFile}",
+                        onlyif   => "! grep 'start-stop-daemon -N ${nice} ' ${service_file}",
                         #Only if the niceness isn't already set:
                         notify   => Service[$service]
                     }
                 }
                 default: {
-                    warning("Niceness not enabled for ${serviceFile}. Please report to ${issuesLink}")
+                    warning("Niceness not enabled for ${service_file}. Please report to ${issues_link}")
                 }
             }
         } else {

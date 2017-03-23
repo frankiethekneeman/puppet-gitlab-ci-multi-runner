@@ -274,7 +274,8 @@ define gitlab_ci_multi_runner::runner (
         )
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
+    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} \
+${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
