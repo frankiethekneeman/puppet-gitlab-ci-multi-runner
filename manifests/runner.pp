@@ -178,7 +178,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $description = shellquote($::name)
+    $node_description = shellquote($::name)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -188,10 +188,10 @@ define gitlab_ci_multi_runner::runner (
         $gitlab_ci_url_opt = "--url=${gitlab_ci_url}"
     }
 
-    if $description {
-        $description_opt = $::gitlab_ci_multi_runner::version ? {
-            /^0\.[0-4]\..*/ => "--description=${description}",
-            default         => "--name=${description}",
+    if $node_description {
+        $node_description_opt = $::gitlab_ci_multi_runner::version ? {
+            /^0\.[0-4]\..*/ => "--node_description=${node_description}",
+            default         => "--name=${node_description}",
         }
     }
 
@@ -220,7 +220,7 @@ define gitlab_ci_multi_runner::runner (
 
 
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
+    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
 
     if $executor {
         $executor_opt = "--executor=${executor}"
@@ -309,7 +309,7 @@ ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} 
         user     => $user,
         provider => shell,
 
-        onlyif   => "! grep ${description} ${::gitlab_ci_multi_runner::toml_file}",
+        onlyif   => "! grep ${node_description} ${::gitlab_ci_multi_runner::toml_file}",
         cwd      => $home_path,
         require  => $require,
     }
