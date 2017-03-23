@@ -140,7 +140,7 @@ class gitlab_ci_multi_runner (
     }
 
     # Stop the package being updated where a specific version is specified (used for redhat 5 and 6)
-    if $version != 'latest' {
+    if ! ($version in ['latest', 'present']) {
         exec { 'Yum Exclude Line':
             command  => 'echo exclude= >> /etc/yum.conf',
             onlyif   => "! grep '^exclude=' /etc/yum.conf",
