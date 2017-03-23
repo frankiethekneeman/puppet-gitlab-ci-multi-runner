@@ -62,8 +62,16 @@ gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
 
 #### nice
 
-control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.  
+Control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.
 Leading '+' is optional.
+
+#### version
+
+Set the version of the gitlab-ci-multi-runner package. This can be to a specfic version number,
+`present` (if you don't want Puppet to update it for you) or when undefined it defaults to `latest`.
+
+As mentioned above, the version of the package will always be set to `v0.4.2` for RHEL5 and RHEL 6
+derivatives.
 
 ## Runner Options
 
