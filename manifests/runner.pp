@@ -178,7 +178,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $node_description = shellquote($::name)
+    $node_description = shellquote($::hostname)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -304,7 +304,7 @@ ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    exec { "Register-${::name}":
+    exec { "Register-${node_description}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
