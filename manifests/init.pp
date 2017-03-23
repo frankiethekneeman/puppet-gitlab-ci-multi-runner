@@ -63,7 +63,7 @@ class gitlab_ci_multi_runner (
         default => '/bin/true',
     }
 
-    if ($::osfamily = 'redhat') and ($::operatingsystemrelease =~ /^(5.*|6.*)/) {
+    if ($::osfamily == 'redhat') and ($::operatingsystemrelease =~ /^(5.*|6.*)/) {
         $version = '0.4.2-1'
     }
 
