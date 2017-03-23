@@ -9,6 +9,13 @@
 #   -20 to +19.
 #   Default: undef.
 #
+# [*version*]
+#   A version for the gitlab-ci-multi-runner package. This can be to a specfic version number,
+#   present (if you don't want Puppet to update it for you) or latest.
+#
+#   The version of the package will always be set to v0.4.2 for RHEL5 and RHEL 6 derivatives.
+#   Default: latest
+#
 # [*env*]
 #   Pass environment vars to the execs
 #   Useful for a proxy or the like.
