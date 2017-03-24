@@ -69,7 +69,7 @@ class gitlab_ci_multi_runner (
             default      => '/etc/systemd/system/gitlab-runner.service',
         },
         'deb'   => $::operatingsystemrelease ? {
-            /^7.*/ => '/etc/init/gitlab-runner.conf',
+            /^(14.*|7.*)/ => '/etc/init/gitlab-runner.conf',
             default => '/etc/systemd/system/gitlab-runner.service',
         },
         default => '/bin/true',
