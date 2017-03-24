@@ -310,7 +310,7 @@ ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} 
         provider => shell,
 
         onlyif   => "! grep ${node_description} ${::gitlab_ci_multi_runner::toml_file}",
-        cwd      => $home_path,
+        cwd      => $::gitlab_ci_multi_runner::home_path,
         require  => $require,
     }
 }
