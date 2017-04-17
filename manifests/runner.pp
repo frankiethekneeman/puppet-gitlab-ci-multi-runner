@@ -306,7 +306,6 @@ ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} 
     # --non-interactive means it won't ask us for things, it'll just fail out.
     exec { "Register-${node_description}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
-        user     => $user,
         provider => shell,
 
         onlyif   => "! grep ${node_description} ${::gitlab_ci_multi_runner::toml_file}",
