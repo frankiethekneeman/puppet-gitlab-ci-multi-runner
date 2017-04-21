@@ -340,7 +340,7 @@ define gitlab_ci_multi_runner::runner (
     if $machine_machine_driver {
         $machine_machine_driver_opt = "--machine-machine-driver=${machine_machine-driver}"
     }
-    
+ 
     if $machine_machine_name {
         $machine_machine_name_opt = "--machine-machine-name=${machine_machine_name}"
     }
@@ -352,7 +352,7 @@ define gitlab_ci_multi_runner::runner (
             <% end -%>"
         )
     }
-    
+
     $machine_opts="${machine_idle_nodes_opt} ${machine_idle_time_opt} ${machine_max_builds_opt} ${machine_machine_driver_opt} ${machine_machine_name_opt} ${machine_machine_options_opt}"
 
     if $kubernetes_host {
