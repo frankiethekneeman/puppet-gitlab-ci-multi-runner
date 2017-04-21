@@ -349,11 +349,11 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $machine_max_builds {
-        $machine_max_builds_opt = "--machine-max-builds=${machine_max-builds}"
+        $machine_max_builds_opt = "--machine-max-builds=${machine_max_builds}"
     }
 
     if $machine_machine_driver {
-        $machine_machine_driver_opt = "--machine-machine-driver=${machine_machine-driver}"
+        $machine_machine_driver_opt = "--machine-machine-driver=${machine_machine_driver}"
     }
  
     if $machine_machine_name {
@@ -387,7 +387,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $kubernetes_image {
-        $kubernetes_image_opt="--kubernetes_image=${kubernetes-image}"
+        $kubernetes_image_opt="--kubernetes_image=${kubernetes_image}"
     }
 
     if $kubernetes_namespace {
