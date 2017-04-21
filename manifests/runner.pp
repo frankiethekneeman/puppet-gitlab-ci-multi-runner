@@ -28,6 +28,10 @@
 #   Custom environment variables injected to build environment.
 #   Default: undef.
 #
+# [*run_untagged*]
+#   Whether this runner runs builds without a tag.
+#   Default: undef.
+#
 # [*executor*]
 #   Executor - Shell, parallels, ssh, docker etc.
 #   Default: undef.
@@ -104,7 +108,7 @@
 #  gitlab_ci_multi_runner::runner { "This is My Second Runner":
 #      gitlab_ci_url => 'http://ci.gitlab.examplecorp.com'
 #      tags          => ['tag', 'tag2','npm', 'grunt'],
-#      token         => 'sometoken'
+#      token         => 'sometoken',
 #      executor      => 'ssh',
 #      ssh_host      => 'cirunners.examplecorp.com'
 #      ssh_port      => 22
@@ -137,6 +141,7 @@ define gitlab_ci_multi_runner::runner (
     $token = undef,
     $env = undef,
     $executor = undef,
+    $run_untagged = undef,
 
     ########################################################
     # Docker Options                                       #
@@ -202,7 +207,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $description = shellquote($name)
+    $node_description = shellquote($::hostname)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -212,10 +217,10 @@ define gitlab_ci_multi_runner::runner (
         $gitlab_ci_url_opt = "--url=${gitlab_ci_url}"
     }
 
-    if $description {
-        $description_opt = $::gitlab_ci_multi_runner::version ? {
-            /^0\.[0-4]\..*/ => "--description=${description}",
-            default         => "--name=${description}",
+    if $node_description {
+        $node_description_opt = $::gitlab_ci_multi_runner::version ? {
+            /^0\.[0-4]\..*/ => "--node_description=${node_description}",
+            default         => "--name=${node_description}",
         }
     }
 
@@ -233,8 +238,18 @@ define gitlab_ci_multi_runner::runner (
         $env_opts = join($envarry,' ')
     }
 
+    if $run_untagged != undef {
+        if $run_untagged {
+            $run_untagged_opt = '--run-untagged=true'
+        }
+        else {
+            $run_untagged_opt = '--run-untagged=false'
+        }
+    }
+
+
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${description_opt} ${tags_opt} ${token_opt} ${env_opts}"
+    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
 
     if $executor {
         $executor_opt = "--executor=${executor}"
@@ -406,13 +421,13 @@ define gitlab_ci_multi_runner::runner (
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    exec { "Register-${name}":
+    exec { "Register-${node_description}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
 
-        onlyif   => "! grep ${description} ${::gitlab_ci_multi_runner::toml_file}",
-        cwd      => $home_path,
+        onlyif   => "! grep ${node_description} ${::gitlab_ci_multi_runner::toml_file}",
+        cwd      => $::gitlab_ci_multi_runner::home_path,
         require  => $require,
     }
 }
