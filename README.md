@@ -20,7 +20,7 @@ derivatives due to restrictions identified on CentOS systems. RHEL7 and Debian d
 use the most current release
  available.
 
-##Usage
+## Usage
 
 ```puppet
 class {'gitlab_ci_multi_runner': 
@@ -58,83 +58,98 @@ gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
 }
 ```
 
-##Installation Options
+## Installation Options
 
 #### nice
 
-control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.  
+Control the niceness of the actual process running the CI Jobs.  Valid values are from -20 to 19.
 Leading '+' is optional.
 
-##Runner Options
+#### version
+
+Set the version of the gitlab-ci-multi-runner package. This can be to a specfic version number,
+`present` (if you don't want Puppet to update it for you) or when undefined it defaults to `latest`.
+
+As mentioned above, the version of the package will always be set to `v0.4.2` for RHEL5 and RHEL 6
+derivatives.
+
+## Runner Options
 
 All options are pulled from the Gitlab CI MultiRunner registration command - The name of the runner
 will be used to Generate the description when registering the Runner.
 
-###Standard Options
+### Standard Options
 Used By all Executors.
 
-####gitlab\_ci\_url
+#### gitlab\_ci\_url
 > The GitLab-CI Coordinator URL
 
-####tags
+#### tags
 This is a list of tags to apply to the runner - it takes an array, which will be joined into a comma
 separated list of tags.
 
-####token
+#### token
 > The GitLab-CI Token for this Runner
 
-####executor
+#### executor
 > The Executor: shell, docker, docker-ssh, ssh?
 
 The Runner is packages with a "Parallels" Executor as well.
 
+#### run\_untagged
+> Run builds without tag: true, false?
+
+If you want this runner to execute builds without a tag given in .gitlab-ci.yml.
+When undefined Gitlab defaults to true if no list of tags for this runner is
+specified otherwise false.
+
 ### Docker Options
 Used by the Docker and Docker SSH executors.
 
-####docker\_image
+#### docker\_image
 > The Docker Image (eg. ruby:2.1)
 
-####docker\_privileged
+#### docker\_privileged
 > Run Docker containers in privileged mode
 
 Any truthy value will set this off.
 
-####docker\_mysql
+#### docker\_mysql
 > If you want to enable mysql please enter version (X.Y) or enter latest
 
-####docker\_postgres
+#### docker\_postgres
 > If you want to enable postgres please enter version (X.Y) or enter latest
 
-####docker\_redis
+#### docker\_redis
 > If you want to enable redis please enter version (X.Y) or enter latest
 
-####docker\_mongo
+#### docker\_mongo
 > If you want to enable mongo please enter version (X.Y) or enter latest
 
-####docker\_volumes
+#### docker\_volumes
 > Specify a list of volumes that are being mounted to every docker container spawned by a docker
 executor. For details see the
 [official documentation about docker volumes](https://docs.docker.com/engine/userguide/containers/dockervolumes/).
 
-###Parallels Options
+### Parallels Options
 Used by the "Parallels" executor.
 
-####parallels\_vm
+#### parallels\_vm
 > The Parallels VM (eg. my-vm)
 
-###SSH Options
+### SSH Options
 Used by the SSH, Docker SSH, and Parllels Executors.
 
-####ssh\_host
+#### ssh\_host
 > The SSH Server Address (eg. my.server.com)
 
-####ssh\_port
+#### ssh\_port
 > The SSH Server Port (eg. 22)
 
-####ssh\_user
+#### ssh\_user
 > The SSH User (eg. root)
 
-####ssh\_password
+#### ssh\_password
 > The SSH Password (eg. docker.io)
 
 ## Contributing
