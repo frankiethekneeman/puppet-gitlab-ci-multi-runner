@@ -315,7 +315,7 @@ define gitlab_ci_multi_runner::runner (
         $docker_tlsverify_opt = "docker-tlsverify=${docker_tlsverify}"
     }
 
-    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} 
+    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt}
     ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
 
     if $parallels_vm {
@@ -355,7 +355,7 @@ define gitlab_ci_multi_runner::runner (
     if $machine_machine_driver {
         $machine_machine_driver_opt = "--machine-machine-driver=${machine_machine_driver}"
     }
- 
+
     if $machine_machine_name {
         $machine_machine_name_opt = "--machine-machine-name=${machine_machine_name}"
     }
