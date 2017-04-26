@@ -75,11 +75,21 @@ class gitlab_ci_multi_runner (
         default => '/bin/true',
     }
 
-    if ($::osfamily == 'redhat') and ($::operatingsystemrelease =~ /^(5.*|6.*)/) {
-        $version = '0.4.2-1'
+    if !$version {
+        $theVersion = $::osfamily ? {
+            'redhat' => $::operatingsystemrelease ? {
+                /^(5.*|6.*)/ => '0.4.2-1',
+                default      => 'latest',
+            },
+            'debian' => 'latest',
+            default  => 'There is no spoon',
+        }
+    } else {
+        $theVersion = $version
+
     }
 
-    $service = $version ? {
+    $service = $theVersion ? {
         '0.4.2-1' => 'gitlab-ci-multi-runner',
         default   => 'gitlab-runner',
     }
@@ -121,7 +131,7 @@ class gitlab_ci_multi_runner (
     } ->
     # Install the package after the repo has been added.
     package { 'gitlab-ci-multi-runner':
-        ensure => $version,
+        ensure => $theVersion,
     } ->
     exec { 'Uninstall Misconfigured Service':
         command  => "service ${service} stop; ${service} uninstall",
@@ -146,7 +156,7 @@ class gitlab_ci_multi_runner (
     }
 
     # Stop the package being updated where a specific version is specified
-    if ! ($version in ['latest', 'present']) {
+    if ! ($theVersion in ['latest', 'present']) {
         exec { 'Yum Exclude Line':
             command  => 'echo exclude= >> /etc/yum.conf',
             onlyif   => "! grep '^exclude=' /etc/yum.conf",
