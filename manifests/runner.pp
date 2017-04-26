@@ -417,6 +417,7 @@ define gitlab_ci_multi_runner::runner (
     $kubernetes_opts="${kubernetes_host_opt} ${kubernetes_cert_file_opt} ${kubernetes_key_file_opt} ${kubernetes_ca_file_opt} ${kubernetes_image_opt} ${kubernetes_namespace_opt} ${kubernetes_priviledged_opt} ${kubernetes_cpus_opt} ${kubernetes_memory_opt} ${kubernetes_service_cpus_opt} ${kubernetes_service_memory_opt}"
 
     $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts} ${kubernetes_opts}"
+    notify{"Will run gitlab-ci-multi-runner register --non-interactive ${opts}": }
 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
