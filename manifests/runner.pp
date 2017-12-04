@@ -96,6 +96,66 @@
 #   Array of requirements for the runner registration resource.
 #   Default: [ Class['gitlab_ci_multi_runner'] ].
 #
+# [*cache_type*]
+#   Select caching method: s3, to use S3 buckets.
+#   Default: undef.
+#
+# [*cache_s3_server_address*]
+#   A host:port to the used S3_compatible server.
+#   Default: undef.
+#
+# [*cache_s3_access_key*]
+#   S3 Access Key
+#   Default: undef.
+#
+# [*cache_s3_secret_key*]
+#   S3 Secret Key.
+#   Default: undef.
+#
+# [*cache_s3_bucket_name*]
+#   Name of the bucket where cache will be stored.
+#   Default: undef.
+#
+# [*cache_s3_bucket_location*]
+#   Name of S3 region.
+#   Default: undef.
+#
+# [*cache_s3_insecure*]
+#   Use insecure mode (without https).
+#   Default: undef.
+#
+# [*cache_s3_cache_path*]
+#   Name of the path to prepend to the cache URL.
+#   Default: undef.
+#
+# [*cache_cache_shared*]
+#   Enable cache sharing between runners.
+#   Default: undef.
+#
+# [*machine_idle_nodes*]
+#   Maximum idle machines.
+#   Default: undef.
+#
+# [*machine_idle_time*]
+#   Minimum time after node can be destroyed.
+#   Default: undef.
+#
+# [*machine_max_builds*]
+#   Maximum number of builds processed by machine.
+#   Default: undef.
+#
+# [*machine_machine_driver*]
+#   The driver to use when creating machine.
+#   Default: undef.
+#
+# [*machine_machine_name*]
+#   The template for machine name (needs to include %s).
+#   Default: undef.
+#
+# [*machine_machine_options*]
+#   Additional machine creation options.
+#   Default: undef.
+#
 # === Examples
 #
 #  gitlab_ci_multi_runner::runner { "This is My Runner":
@@ -127,7 +187,8 @@
 #      docker_allowed_images   => ['ruby', 'wordpress'],
 #      docker_volumes          => ['/var/run/docker.sock:/var/run/docker.sock', '/src/webapp:/opt/webapp']
 #  }
-#
+#;
+
 define gitlab_ci_multi_runner::runner (
     $user = 'gitlab_ci_multi_runner',
 
@@ -142,6 +203,10 @@ define gitlab_ci_multi_runner::runner (
     $env = undef,
     $executor = undef,
     $run_untagged = undef,
+    $locked = undef,
+    $cache_dir = undef,
+    $concurrent = undef,
+    $metrics_server = undef,
 
     ########################################################
     # Docker Options                                       #
@@ -160,6 +225,21 @@ define gitlab_ci_multi_runner::runner (
     $docker_host = undef,
     $docker_cert_path = undef,
     $docker_tlsverify = undef,
+
+    ########################################################
+    # Cache Options                                        #
+    # Used by Docker to send cache to S3                   #
+    ########################################################
+
+    $cache_type = undef,
+    $cache_s3_server_address = undef,
+    $cache_s3_access_key = undef,
+    $cache_s3_secret_key = undef,
+    $cache_s3_bucket_name = undef,
+    $cache_s3_bucket_location = undef,
+    $cache_s3_insecure = undef,
+    $cache_s3_cache_path = undef,
+    $cache_cache_shared = undef,
 
     ########################################################
     # Machine Options                                      #
@@ -207,7 +287,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $node_description = shellquote($::hostname)
+    $node_description = shellquote($::fqdn)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -247,9 +327,16 @@ define gitlab_ci_multi_runner::runner (
         }
     }
 
+    if $locked!=undef {
+        $locked_opt = "--locked=${locked}"
+    }
+
+    if $cache_dir{
+        $cache_dir_opt = "--cache-dir=${cache_dir}"
+    }
 
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${token_opt} ${env_opts} ${run_untagged_opt}"
+    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${locked_opt} ${token_opt} ${env_opts} ${run_untagged_opt} ${cache_dir_opt} "
 
     if $executor {
         $executor_opt = "--executor=${executor}"
@@ -298,7 +385,7 @@ define gitlab_ci_multi_runner::runner (
     if $docker_volumes {
         $docker_volumes_opt = inline_template(
           "<% @docker_volumes.each do |volume| -%>
-            --docker-volumes=<%= \"'#{volume}'\" -%>
+            --docker-volumes <%= \"#{volume}\"-%>
             <% end -%>"
         )
     }
@@ -316,6 +403,44 @@ define gitlab_ci_multi_runner::runner (
     }
 
     $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
+
+    if $cache_type {
+      $cache_type_opt = "--cache-type=${cache_type}"
+    }
+
+    if $cache_s3_server_address {
+      $cache_s3_server_address_opt = "--cache-s3-server-address=${cache_s3_server_address}"
+    }
+
+    if $cache_s3_access_key {
+      $cache_s3_access_key_opt = "--cache-s3-access-key=${cache_s3_access_key}"
+    }
+
+    if $cache_s3_secret_key {
+      $cache_s3_secret_key_opt = "--cache-s3-secret-key=${cache_s3_secret_key}"
+    }
+
+    if $cache_s3_bucket_name {
+      $cache_s3_bucket_name_opt = "--cache-s3-bucket-name=${cache_s3_bucket_name}"
+    }
+
+    if $cache_s3_bucket_location {
+      $cache_s3_bucket_location_opt = "--cache-s3-bucket-location=${cache_s3_bucket_location}"
+    }
+
+    if $cache_s3_insecure {
+      $cache_s3_insecure_opt = "--cache-s3-insecure=${cache_s3_insecure}"
+    }
+
+    if $cache_s3_cache_path {
+      $cache_s3_cache_path_opt = "--cache-s3-cache-path=${cache_s3_cache_path}"
+    }
+
+    if $cache_cache_shared {
+      $cache_cache_shared_opt = "--cache-cache-shared=${cache_cache_shared}"
+    }
+
+    $cache_opts="${cache_type_opt} ${cache_s3_server_address_opt} ${cache_s3_access_key_opt} ${cache_s3_secret_key_opt} ${cache_s3_bucket_name_opt} ${cache_s3_bucket_location_opt} ${cache_s3_insecure_opt} ${cache_s3_cache_path_opt} ${cache_cache_shared_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
@@ -361,7 +486,7 @@ define gitlab_ci_multi_runner::runner (
 
     if $machine_machine_options {
         $machine_machine_options_opt = inline_template(
-          "<% @docker_machine_options.each do |options| -%>
+          "<% @machine_machine_options.each do |options| -%>
             --machine-machine-options=<%= \"'#{options}'\" -%>
             <% end -%>"
         )
@@ -415,19 +540,37 @@ define gitlab_ci_multi_runner::runner (
 
     $kubernetes_opts="${kubernetes_host_opt} ${kubernetes_cert_file_opt} ${kubernetes_key_file_opt} ${kubernetes_ca_file_opt} ${kubernetes_image_opt} ${kubernetes_namespace_opt} ${kubernetes_priviledged_opt} ${kubernetes_cpus_opt} ${kubernetes_memory_opt} ${kubernetes_service_cpus_opt} ${kubernetes_service_memory_opt}"
 
-    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts} ${kubernetes_opts}"
+    $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${cache_opts} ${parallels_vm_opt} ${ssh_opts} ${machine_opts} ${kubernetes_opts}"
     notify{"Will run gitlab-ci-multi-runner register --non-interactive ${opts}": }
 
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    exec { "Register-${node_description}":
+    exec { "Register-${node_description}-${gitlab_ci_url}":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
-
-        onlyif   => "! grep ${node_description} ${::gitlab_ci_multi_runner::toml_file}",
-        cwd      => $::gitlab_ci_multi_runner::home_path,
-        require  => $require,
+        onlyif   => "! grep ${gitlab_ci_url} ${::gitlab_ci_multi_runner::toml_file}",
+      cwd        => $::gitlab_ci_multi_runner::home_path,
+      require    => $require,
     }
-}
+
+    if $concurrent {
+      file_line { "concurrent-${gitlab_ci_url}":
+        path    => $::gitlab_ci_multi_runner::toml_file,
+        line    => "concurrent = ${concurrent} ",
+        match   => '^concurrent *',
+        require => Exec["Register-${node_description}-${gitlab_ci_url}"]
+      }
+    }
+
+    if $metrics_server {
+      file_line { "change_metrics_server-${gitlab_ci_url}":
+        path    => $::gitlab_ci_multi_runner::toml_file,
+        after   => 'check_interval *',
+        line    => "metrics_server = \"${metrics_server}\"",
+        match   => '^metrics_server *',
+        require => Exec["Register-${node_description}-${gitlab_ci_url}"],
+      }
+    }
+  }

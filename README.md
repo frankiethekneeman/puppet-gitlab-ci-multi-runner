@@ -37,7 +37,7 @@ gitlab_ci_multi_runner::runner { "This is My Runner":
 gitlab_ci_multi_runner::runner { "This is My Second Runner":
     gitlab_ci_url => 'http://ci.gitlab.examplecorp.com',
     tags          => ['tag', 'tag2','npm', 'grunt'],
-    token         => 'sometoken'
+    token         => 'sometoken',
     executor      => 'ssh',
     ssh_host      => 'cirunners.examplecorp.com',
     ssh_port      => 22,
@@ -46,9 +46,9 @@ gitlab_ci_multi_runner::runner { "This is My Second Runner":
 }
 
 gitlab_ci_multi_runner::runner { "This is My Third Runner using Docker":
-    gitlab_ci_url           => 'http://ci.gitlab.examplecorp.com'
+    gitlab_ci_url           => 'http://ci.gitlab.examplecorp.com',
     tags                    => ['tag', 'tag2','docker', 'container'],
-    token                   => 'sometoken'
+    token                   => 'sometoken',
     executor                => 'docker',
     docker_image            => 'ruby:2.1',
     docker_postgres         => '9.5',
@@ -151,6 +151,55 @@ Used by the SSH, Docker SSH, and Parllels Executors.
 
 #### ssh\_password
 > The SSH Password (eg. docker.io)
+
+### Cache Options
+
+#### cache\_type
+>   Select caching method: s3, to use S3 buckets.
+
+#### cache\_s3\_server\_address
+>   A host:port to the used S3_compatible server.
+
+#### cache\_s3\_access\_key
+>   S3 Access Key
+
+#### cache\_s3\_secret\_key
+>   S3 Secret Key.
+
+#### cache\_s3\_bucket\_name
+>   Name of the bucket where cache will be stored.
+
+#### cache\_s3\_bucket\_location*]
+>   Name of S3 region.
+
+#### cache\_s3\_insecure
+>   Use insecure mode (without https).
+
+#### cache\_s3\_cache\_path
+>   Name of the path to prepend to the cache URL.
+
+#### cache\_cache\_shared
+>   Enable cache sharing between runners.
+
+### Machine Options
+
+#### machine\_idle\_nodes
+>   Maximum idle machines.
+
+#### machine\_idle\_time
+>   Minimum time after node can be destroyed.
+
+#### machine\_max\_builds
+>   Maximum number of builds processed by machine.
+
+#### machine\_machine\_driver
+>   The driver to use when creating machine.
+
+#### machine\_machine\_name
+>   The template for machine name (needs to include %s).
+
+#### machine\_machine\_options
+>   Additional machine creation options.
 
 ## Contributing
 
