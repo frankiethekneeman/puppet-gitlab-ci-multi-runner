@@ -28,6 +28,10 @@
 #   Custom environment variables injected to build environment.
 #   Default: undef.
 #
+# [*limit*]
+#   Maximum number of builds processed by this runner
+#   Default: undef.
+#
 # [*run_untagged*]
 #   Whether this runner runs builds without a tag.
 #   Default: undef.
@@ -196,17 +200,16 @@ define gitlab_ci_multi_runner::runner (
     # Runner Options                                       #
     # Used By all Executors.                               #
     ########################################################
-
+    $description = $title,
     $gitlab_ci_url = undef,
     $tags = undef,
     $token = undef,
     $env = undef,
+    $limit = undef,
     $executor = undef,
     $run_untagged = undef,
     $locked = undef,
     $cache_dir = undef,
-    $concurrent = undef,
-    $metrics_server = undef,
 
     ########################################################
     # Docker Options                                       #
@@ -287,7 +290,7 @@ define gitlab_ci_multi_runner::runner (
 ) {
     # GitLab allows runner names with problematic characters like quotes
     # Make sure they don't trip up the shell when executed
-    $node_description = shellquote($::fqdn)
+    $node_description = shellquote($description)
 
     # Here begins the arduous, manual process of taking each argument
     # and turning it into option strings.
@@ -318,6 +321,10 @@ define gitlab_ci_multi_runner::runner (
         $env_opts = join($envarry,' ')
     }
 
+    if $limit {
+        $limit_opt = "--limit=${limit}"
+    }
+
     if $run_untagged != undef {
         if $run_untagged {
             $run_untagged_opt = '--run-untagged=true'
@@ -336,7 +343,7 @@ define gitlab_ci_multi_runner::runner (
     }
 
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${locked_opt} ${token_opt} ${env_opts} ${run_untagged_opt} ${cache_dir_opt} "
+    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${locked_opt} ${token_opt} ${env_opts} ${limit_opt} ${run_untagged_opt} ${cache_dir_opt} "
 
     if $executor {
         $executor_opt = "--executor=${executor}"
@@ -546,31 +553,31 @@ define gitlab_ci_multi_runner::runner (
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
-    exec { "Register-${node_description}-${gitlab_ci_url}":
+    exec { "Register-$title":
         command  => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user     => $user,
         provider => shell,
-        onlyif   => "! grep ${gitlab_ci_url} ${::gitlab_ci_multi_runner::toml_file}",
-      cwd        => $::gitlab_ci_multi_runner::home_path,
-      require    => $require,
+        onlyif   => "! grep ${title} ${::gitlab_ci_multi_runner::toml_file}",
+        cwd      => $::gitlab_ci_multi_runner::home_path,
+        require  => $require,
+    }
+    if $::gitlab_ci_multi_runner::concurrent {
+        file_line { "concurrent-$title":
+          path    => $::gitlab_ci_multi_runner::toml_file,
+          line    => "concurrent = ${gitlab_ci_multi_runner::concurrent} ",
+          match   => '^concurrent *',
+          require => Exec["Register-$title"]
+        }
     }
 
-    if $concurrent {
-      file_line { "concurrent-${gitlab_ci_url}":
-        path    => $::gitlab_ci_multi_runner::toml_file,
-        line    => "concurrent = ${concurrent} ",
-        match   => '^concurrent *',
-        require => Exec["Register-${node_description}-${gitlab_ci_url}"]
-      }
+    if $::gitlab_ci_multi_runner::metrics_server {
+        file_line { "change_metrics_server-$title":
+          path    => $::gitlab_ci_multi_runner::toml_file,
+          after   => 'check_interval *',
+          line    => "metrics_server = \"${gitlab_ci_multi_runner::metrics_server}\"",
+          match   => '^metrics_server *',
+          require => Exec["Register-$title"],
+        }
     }
 
-    if $metrics_server {
-      file_line { "change_metrics_server-${gitlab_ci_url}":
-        path    => $::gitlab_ci_multi_runner::toml_file,
-        after   => 'check_interval *',
-        line    => "metrics_server = \"${metrics_server}\"",
-        match   => '^metrics_server *',
-        require => Exec["Register-${node_description}-${gitlab_ci_url}"],
-      }
-    }
-  }
+}

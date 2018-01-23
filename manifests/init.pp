@@ -33,6 +33,11 @@
 #   You may want to use root.
 #   Default: gitlab_ci_multi_runner.
 #
+# [*concurrent*]
+#   Limits how many jobs globally can be run concurrently.
+#   This is the most upper limit of number of jobs using all defined runners, local and autoscale.
+#   Together with limit (from [[runners]]) and IdleCount (from [runners.machine]) it affects the upper limit of created machines.
+#
 # === Examples
 #
 #  include '::gitlab_ci_multi_runner'
@@ -40,6 +45,8 @@
 class gitlab_ci_multi_runner (
     $nice = undef,
     $env = undef,
+    $concurrent = undef,
+    $metrics_server = undef,
     $manage_user = true,
     $user = 'gitlab_ci_multi_runner',
     $version = 'latest'
@@ -188,6 +195,7 @@ Pin-Priority: 1001',
             provider => shell,
         }
     }
+
     if $nice != undef {
         if $nice =~ /^(-20|[-+]?1?[0-9])$/ {
             $path = '/bin:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin'
