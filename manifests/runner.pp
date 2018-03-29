@@ -210,6 +210,7 @@ define gitlab_ci_multi_runner::runner (
     $run_untagged = undef,
     $locked = undef,
     $cache_dir = undef,
+    $output_limit = undef,
 
     ########################################################
     # Docker Options                                       #
@@ -341,9 +342,12 @@ define gitlab_ci_multi_runner::runner (
     if $cache_dir{
         $cache_dir_opt = "--cache-dir=${cache_dir}"
     }
+    if $output_limit{
+        $output_limit_opt = "--output-limit=${output_limit}"
+    }
 
     # I group like arguments together so my final opstring won't be so giant.
-    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${locked_opt} ${token_opt} ${env_opts} ${limit_opt} ${run_untagged_opt} ${cache_dir_opt} "
+    $runner_opts = "${gitlab_ci_url_opt} ${node_description_opt} ${tags_opt} ${locked_opt} ${token_opt} ${env_opts} ${limit_opt} ${run_untagged_opt} ${cache_dir_opt} ${output_limit_opt}"
 
     if $executor {
         $executor_opt = "--executor=${executor}"
