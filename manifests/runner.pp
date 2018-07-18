@@ -229,6 +229,7 @@ define gitlab_ci_multi_runner::runner (
     $docker_host = undef,
     $docker_cert_path = undef,
     $docker_tlsverify = undef,
+    $docker_pull_policy = undef,
 
     ########################################################
     # Cache Options                                        #
@@ -410,10 +411,13 @@ define gitlab_ci_multi_runner::runner (
     }
 
     if $docker_tlsverify {
-        $docker_tlsverify_opt = "docker-tlsverify=${docker_tlsverify}"
+        $docker_tlsverify_opt = "--docker-tlsverify=${docker_tlsverify}"
+    }
+    if $docker_pull_policy {
+        $docker_pull_policy_opt = "--docker-pull-policy=${docker_pull_policy}"
     }
 
-    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt}"
+    $docker_opts = "${docker_host_opt} ${docker_cert_path_opt} ${docker_tlsverify_opt} ${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt} ${docker_volumes_opt} ${docker_pull_policy_opt}"
 
     if $cache_type {
       $cache_type_opt = "--cache-type=${cache_type}"
