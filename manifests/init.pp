@@ -46,7 +46,7 @@ class gitlab_ci_multi_runner (
     $nice = undef,
     $env = undef,
     $concurrent = undef,
-    $metrics_server = undef,
+    $listen_address = undef,
     $manage_user = true,
     $user = 'gitlab_ci_multi_runner',
     $version = 'latest'

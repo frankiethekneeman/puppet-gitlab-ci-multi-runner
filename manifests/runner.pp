@@ -132,7 +132,7 @@
 #   Name of the path to prepend to the cache URL.
 #   Default: undef.
 #
-# [*cache_cache_shared*]
+# [*cache_shared*]
 #   Enable cache sharing between runners.
 #   Default: undef.
 #
@@ -243,8 +243,8 @@ define gitlab_ci_multi_runner::runner (
     $cache_s3_bucket_name = undef,
     $cache_s3_bucket_location = undef,
     $cache_s3_insecure = undef,
-    $cache_s3_cache_path = undef,
-    $cache_cache_shared = undef,
+    $cache_path = undef,
+    $cache_shared = undef,
 
     ########################################################
     # Machine Options                                      #
@@ -423,6 +423,10 @@ define gitlab_ci_multi_runner::runner (
       $cache_type_opt = "--cache-type=${cache_type}"
     }
 
+    if $cache_path {
+      $cache_path_opt = "--cache-path=${cache_path}"
+    }
+
     if $cache_s3_server_address {
       $cache_s3_server_address_opt = "--cache-s3-server-address=${cache_s3_server_address}"
     }
@@ -447,15 +451,11 @@ define gitlab_ci_multi_runner::runner (
       $cache_s3_insecure_opt = "--cache-s3-insecure=${cache_s3_insecure}"
     }
 
-    if $cache_s3_cache_path {
-      $cache_s3_cache_path_opt = "--cache-s3-cache-path=${cache_s3_cache_path}"
+    if $cache_shared {
+      $cache_shared_opt = "--cache-shared=${cache_shared}"
     }
 
-    if $cache_cache_shared {
-      $cache_cache_shared_opt = "--cache-cache-shared=${cache_cache_shared}"
-    }
-
-    $cache_opts="${cache_type_opt} ${cache_s3_server_address_opt} ${cache_s3_access_key_opt} ${cache_s3_secret_key_opt} ${cache_s3_bucket_name_opt} ${cache_s3_bucket_location_opt} ${cache_s3_insecure_opt} ${cache_s3_cache_path_opt} ${cache_cache_shared_opt}"
+    $cache_opts="${cache_type_opt} ${cache_s3_server_address_opt} ${cache_s3_access_key_opt} ${cache_s3_secret_key_opt} ${cache_s3_bucket_name_opt} ${cache_s3_bucket_location_opt} ${cache_s3_insecure_opt} ${cache_path_opt} ${cache_shared_opt}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
@@ -578,12 +578,12 @@ define gitlab_ci_multi_runner::runner (
         }
     }
 
-    if $::gitlab_ci_multi_runner::metrics_server {
-        file_line { "change_metrics_server-$title":
+    if $::gitlab_ci_multi_runner::listen_address {
+        file_line { "change_listen_address	-$title":
           path    => $::gitlab_ci_multi_runner::toml_file,
           after   => 'check_interval *',
-          line    => "metrics_server = \"${gitlab_ci_multi_runner::metrics_server}\"",
-          match   => '^metrics_server *',
+          line    => "listen_address = \"${gitlab_ci_multi_runner::listen_address}\"",
+          match   => '^listen_address *',
           require => Exec["Register-$title"],
         }
     }
